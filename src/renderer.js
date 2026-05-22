@@ -1,7 +1,8 @@
 import { FractalNoise } from './FractalNoise.js';
-import { PixelManipulator } from './PixelManipulator.js';
 import { NumberCircle } from './NumberCircle.js';
 import { ConvolveMatrixFilter } from './ConvolveMatrixFilter.js';
+import { generateDisplacedPath, generateRealisticPath } from './pathGenerators.js';
+import { drawPathTree } from './pathRenderer.js';
 
 /**
  * Renders lightning onto the provided canvas set.
@@ -15,73 +16,20 @@ export function renderLightning(canvases, options) {
     const width = finalCanv.width;
     const height = finalCanv.height;
 
-    // --- Generate displacement noise map ---
-    const displacementMapCtx = displacementMapCanv.getContext("2d");
-    const displacementMap = new FractalNoise(width, height, {
-        baseFrequency: [options.twitchScale, options.twitchScale],
-        type: options.noiseType === "Fractal" ? "fractalNoise" : "turbulence",
-        numOctaves: options.twitchOctaves,
-        seed: options.twitchSeed,
-        stitchTiles: "stitch"
-    });
-    displacementMap.render();
-    displacementMapCtx.drawImage(displacementMap.canvas, 0, 0);
-    const manipulator = new PixelManipulator(displacementMap.canvas);
+    // --- Generate path based on mode ---
+    const mode = options.generationMode || "Displacement";
+    let path;
 
-    // --- Draw core bolt path ---
+    if (mode === "Realistic") {
+        path = generateRealisticPath(options, width, height);
+    } else {
+        path = generateDisplacedPath(options, width, height);
+    }
+
+    // --- Draw path onto base canvas ---
     const baseCtx = baseCanv.getContext("2d");
     baseCtx.clearRect(0, 0, width, height);
-
-    let twitchAmount = options.twitchAmount;
-    if (options.noiseType === "Perlin") twitchAmount /= 3;
-
-    const centerY = height / 2;
-    const startX = width / 2 - options.baseLength / 2;
-    const endX = startX + options.baseLength;
-    const baseThickness = options.coreSize;
-
-    baseCtx.fillStyle = "white";
-    for (let x = startX; x <= endX; x += 1) {
-        let displacedY = centerY;
-        const [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(centerY));
-        const luma = (r + g + b) / (3 * 255);
-        const deltaPos = (luma - 0.5) * twitchAmount;
-        displacedY += Math.round(deltaPos);
-
-        const progress = (x - startX) / options.baseLength;
-        const radius = baseThickness * (1 - progress * options.taper / 100);
-        baseCtx.beginPath();
-        baseCtx.arc(x, displacedY, radius, 0, 2 * Math.PI);
-        baseCtx.fill();
-    }
-
-    // --- Draw branches ---
-    const branchAngleRad = options.branchAngle * Math.PI / 180;
-    const branchSpace = options.baseLength / (options.numBranches + 1);
-
-    for (let i = 0; i < options.numBranches; i++) {
-        const flipBranch = (i % 2 === 0) ? 1 : -1;
-        const branchLength = options.branchLen - options.branchLenDelta * i;
-        const branchStartX = startX + (i + 1) * branchSpace;
-
-        for (let dist = 0; dist < branchLength; dist++) {
-            const x = branchStartX + dist * Math.cos(branchAngleRad);
-            const y = centerY + dist * Math.sin(branchAngleRad) * flipBranch;
-            let displacedY = y;
-
-            const [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(y));
-            const luma = (r + g + b) / (3 * 255);
-            const deltaPos = (luma - 0.5) * twitchAmount;
-            displacedY += Math.round(deltaPos);
-
-            const progress = dist / branchLength;
-            const startRadius = baseThickness * (1 - (branchStartX - startX) / options.baseLength * options.taper / 100);
-            const radius = startRadius * (1 - progress * options.taper / 100);
-            baseCtx.beginPath();
-            baseCtx.arc(x, displacedY, radius, 0, 2 * Math.PI);
-            baseCtx.fill();
-        }
-    }
+    drawPathTree(baseCtx, path);
 
     // --- Generate glow layer ---
     const glowCtx = glowCanv.getContext("2d");

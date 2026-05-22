@@ -6,6 +6,7 @@ import { builtInPresets, getPresetFromDOM, applyPresetToDOM } from './presets.js
  */
 const guiSections = {
     Dimensions: [
+        { label: "Mode", id: "generationMode", type: "select", options: ["Displacement", "Realistic"], attr: { value: "Displacement" } },
         { label: "Length", id: "baseLength", type: "number", attr: { value: 1000, step: 1 } },
         { label: "Taper", id: "taper", type: "number", attr: { value: 70, step: 1, min: 0, max: 100 } },
     ],
@@ -21,6 +22,15 @@ const guiSections = {
         { label: "Max Length", id: "branchLen", type: "number", attr: { value: 300, step: 1 } },
         { label: "Length Delta", id: "branchLenDelta", type: "number", attr: { value: 54, step: 1, min: 0 } },
         { label: "Angle", id: "branchAngle", type: "number", attr: { value: 33, step: 1, min: 0, max: 360 } },
+    ],
+    Realistic: [
+        { label: "Seed", id: "realisticSeed", type: "number", attr: { value: 42, step: 1 } },
+        { label: "Detail", id: "realisticDetail", type: "number", attr: { value: 7, step: 1, min: 3, max: 10 } },
+        { label: "Displacement", id: "realisticDisplacement", type: "number", attr: { value: 150, step: 5, min: 0 } },
+        { label: "Branch Chance", id: "realisticBranchChance", type: "number", attr: { value: 0.04, step: 0.005, min: 0, max: 0.3 } },
+        { label: "Branch Length", id: "realisticBranchLength", type: "number", attr: { value: 0.5, step: 0.05, min: 0, max: 1.0 } },
+        { label: "Branch Angle", id: "realisticBranchAngle", type: "number", attr: { value: 35, step: 1, min: 0, max: 90 } },
+        { label: "Max Branch Depth", id: "realisticMaxBranchDepth", type: "number", attr: { value: 4, step: 1, min: 0, max: 6 } },
     ],
     Core: [
         { label: "Size", id: "coreSize", type: "number", attr: { value: 7, step: 1 } },
@@ -41,6 +51,11 @@ const guiSections = {
     ],
 };
 
+// Sections that only apply to Displacement mode
+const displacementOnlySections = ["Twitch", "Branches"];
+// Sections that only apply to Realistic mode
+const realisticOnlySections = ["Realistic"];
+
 /**
  * Build all GUI sections using the global ygui library.
  */
@@ -54,6 +69,39 @@ export function buildGUI() {
     // Force correct initial values for select elements
     document.querySelector("#glowNoiseType").value = "Fractal";
     document.querySelector("#noiseType").value = "Fractal";
+    document.querySelector("#generationMode").value = "Displacement";
+
+    // Set initial section visibility based on mode
+    updateModeVisibility("Displacement");
+}
+
+/**
+ * Show/hide sections based on the selected generation mode.
+ */
+function updateModeVisibility(mode) {
+    for (const sectionId of displacementOnlySections) {
+        const header = findSectionHeader(sectionId);
+        const container = document.getElementById(sectionId);
+        if (header) header.style.display = mode === "Displacement" ? "" : "none";
+        if (container) container.style.display = mode === "Displacement" ? "none" : "none"; // stays collapsed
+    }
+    for (const sectionId of realisticOnlySections) {
+        const header = findSectionHeader(sectionId);
+        const container = document.getElementById(sectionId);
+        if (header) header.style.display = mode === "Realistic" ? "" : "none";
+        if (container) container.style.display = mode === "Realistic" ? "none" : "none"; // stays collapsed
+    }
+}
+
+/**
+ * Find the <b> header element for a given section ID.
+ */
+function findSectionHeader(sectionId) {
+    const displayName = sectionId.replaceAll("_", " ");
+    for (const b of document.querySelectorAll("#options b")) {
+        if (b.innerText === displayName) return b;
+    }
+    return null;
 }
 
 /**
@@ -63,6 +111,7 @@ export function initAccordion() {
     for (const sectionHeader of document.querySelectorAll("#options b")) {
         sectionHeader.addEventListener("click", function () {
             const correspondingSection = document.getElementById(this.innerText.replaceAll(" ", "_"));
+            if (!correspondingSection) return;
             if (correspondingSection.style.display === "none") {
                 correspondingSection.style.display = "block";
             } else {
@@ -72,7 +121,7 @@ export function initAccordion() {
         });
     }
     // Start all sections collapsed
-    for (const section of document.querySelectorAll("#options div")) {
+    for (const section of document.querySelectorAll("#options > div")) {
         section.style.display = "none";
     }
 }
@@ -101,11 +150,22 @@ export function initInputListeners(markDirty) {
     for (const inputElem of document.querySelectorAll("#options input, #options select")) {
         inputElem.addEventListener("input", () => markDirty());
         inputElem.addEventListener("focus", function () {
-            document.querySelector(`label[for=${this.id}]`).style.color = "deepskyblue";
+            const label = document.querySelector(`label[for=${this.id}]`);
+            if (label) label.style.color = "deepskyblue";
         });
         inputElem.addEventListener("blur", function () {
-            document.querySelector(`label[for=${this.id}]`).style.color = "";
+            const label = document.querySelector(`label[for=${this.id}]`);
+            if (label) label.style.color = "";
         });
     }
+
+    // Mode change: show/hide relevant sections
+    const modeSelect = document.querySelector("#generationMode");
+    if (modeSelect) {
+        modeSelect.addEventListener("input", () => {
+            updateModeVisibility(modeSelect.value);
+        });
+    }
+
     return getPresetFromDOM;
 }
