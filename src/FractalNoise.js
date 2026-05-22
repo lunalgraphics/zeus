@@ -1,4 +1,4 @@
-class FractalNoise {
+export class FractalNoise {
     canvas = document.createElement("canvas");
     svgFilter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
     options = {
@@ -12,7 +12,7 @@ class FractalNoise {
     height = 1080;
 
     setOptions(options) {
-        for (var opt in options) {
+        for (const opt in options) {
             this.options[opt] = options[opt];
         }
         this.svgFilter.innerHTML = `<feTurbulence
@@ -39,9 +39,9 @@ class FractalNoise {
     render() {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        var canv = this.canvas;
+        const canv = this.canvas;
+        const ctx = canv.getContext("2d");
 
-        var ctx = canv.getContext("2d");
         ctx.restore();
         ctx.save();
         ctx.clearRect(0, 0, canv.width, canv.height);
@@ -50,16 +50,16 @@ class FractalNoise {
         ctx.restore();
         ctx.save();
 
-        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.appendChild(this.svgFilter);
         document.body.appendChild(svg);
-        if (this.options.type == "fractalNoise") {
+
+        if (this.options.type === "fractalNoise") {
             ctx.filter = `url(#${this.svgFilter.id})`;
             ctx.fillRect(0, 0, canv.width, canv.height);
             ctx.filter = `url(#${this.svgFilter.id}) opacity(0.77)`;
             ctx.fillRect(0, 0, canv.width, canv.height);
-        }
-        else if (this.options.type == "turbulence") {
+        } else if (this.options.type === "turbulence") {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canv.width, canv.height);
             ctx.restore();
@@ -73,8 +73,10 @@ class FractalNoise {
             ctx.fillRect(0, 0, canv.width, canv.height);
             ctx.fillStyle = "#515151";
             ctx.fillRect(0, 0, canv.width, canv.height);
+        } else {
+            console.warn("Invalid noise type:", this.options.type);
         }
-        else console.log("invalid noise type: " + this.options.type);
+
         svg.remove();
     }
 }

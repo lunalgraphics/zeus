@@ -1,4 +1,4 @@
-class ConvolveMatrixFilter {
+export class ConvolveMatrixFilter {
     svgFilter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
     matrix = Array.from(new Array(3), () => new Array(3));
     _svg;
@@ -15,7 +15,7 @@ class ConvolveMatrixFilter {
     setMatrix(matrix) {
         this.matrix = matrix;
         let kernelString = "";
-        for (let row of this.matrix) {
+        for (const row of this.matrix) {
             kernelString += row.join(" ");
             kernelString += "\n";
         }

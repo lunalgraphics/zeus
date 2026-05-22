@@ -10,10 +10,12 @@ body {
     background-color: #11111a;
     color: aliceblue;
     overflow-y: scroll;
+    margin: 0;
+    padding: 0;
 }
 
 ::-webkit-scrollbar {
-    width: 6.9px;
+    width: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,14 +30,42 @@ body {
     background: #0055AA;
 }
 
+/* --- Layout --- */
+
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+}
+
+#previewSpace {
+    width: 600px;
+}
+
+#previewSpace canvas {
+    width: 100%;
+}
+
+.preset-row {
+    margin-top: 8px;
+}
+
+/* --- Typography --- */
+
 b {
-    font-weight: 700!important;
+    font-weight: 700;
     transition: color 0.2s;
+    cursor: pointer;
+    display: block;
+    padding: 4px 0;
 }
 
 b:hover {
-    color: deepskyblue!important;
+    color: deepskyblue;
 }
+
+/* --- Form controls --- */
 
 input, select {
     font-size: 12px;
@@ -50,7 +80,7 @@ input, select {
 }
 
 input:focus, select:focus {
-    outline: none!important;
+    outline: none;
     border: 1px solid deepskyblue;
     color: deepskyblue;
 }
@@ -72,33 +102,33 @@ button {
     border: 1px solid aliceblue;
     border-radius: 2px;
     transition: 0.2s;
-    padding-left: 12px;
-    padding-right: 12px;
-    margin: 6.9px;
+    padding: 4px 12px;
+    cursor: pointer;
 }
 
 button:hover {
-    outline: none!important;
     border: 1px solid deepskyblue;
     color: deepskyblue;
 }
 
+/* --- Options panel --- */
+
 #options {
     width: calc(600px - 57px);
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
+    margin: 0 auto;
 }
+
+#presetselector {
+    width: auto;
+}
+
+/* --- Responsive --- */
 
 @media only screen and (max-width: 600px) {
     #previewSpace {
-        width: 100%!important;
+        width: 100%;
     }
     #options {
         width: calc(100% - 57px);
     }
-}
-
-#presetselector {
-    width: auto!important;
 }

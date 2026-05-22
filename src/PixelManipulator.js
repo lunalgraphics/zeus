@@ -1,4 +1,4 @@
-class PixelManipulator {
+export class PixelManipulator {
     canvas;
     ctx;
     imageData;
@@ -10,7 +10,7 @@ class PixelManipulator {
     }
 
     getPixel(x, y) {
-        let redPosition = (y * this.canvas.width + x) * 4;
+        const redPosition = (y * this.canvas.width + x) * 4;
         return [
             this.imageData.data[redPosition],
             this.imageData.data[redPosition + 1],
@@ -19,8 +19,8 @@ class PixelManipulator {
         ];
     }
 
-    setPixel(x, y, rgba=[0, 0, 0, 255]) {
-        let redPosition = (y * this.canvas.width + x) * 4;
+    setPixel(x, y, rgba = [0, 0, 0, 255]) {
+        const redPosition = (y * this.canvas.width + x) * 4;
         if (redPosition > this.imageData.data.length || redPosition < 0) {
             return false;
         }

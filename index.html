@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <title>Zeus</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="Noise-based Lightning Renderer" />
         <meta name="keywords" content="Lightning, VFX, Rendering" />
         <meta name="author" content="Yikuan Sun" />
@@ -12,42 +14,37 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <center>
+        <div class="preview-container">
             <button id="exportPNG">Export PNG</button>
-            <br />
-            <div id="previewSpace" style="width: 600px;">
-                <canvas id="baseCanv" width="2000" height="1000" style="width: 100%; display: none;"></canvas>
-                <canvas id="displacementMapCanv" width="2000" height="1000" style="width: 100%; display: none;"></canvas>
-                <canvas id="glowCanv" width="2000" height="1000" style="width: 100%; display: none;"></canvas>
-                <canvas id="finalCanv" width="2000" height="1000" style="width: 100%;"></canvas>
+            <div id="previewSpace">
+                <canvas id="baseCanv" width="2000" height="1000" style="display: none;"></canvas>
+                <canvas id="displacementMapCanv" width="2000" height="1000" style="display: none;"></canvas>
+                <canvas id="glowCanv" width="2000" height="1000" style="display: none;"></canvas>
+                <canvas id="finalCanv" width="2000" height="1000"></canvas>
             </div>
-            Preset: <select id="presetselector"></select> <br />
-        </center>
+            <div class="preset-row">
+                Preset: <select id="presetselector"></select>
+            </div>
+        </div>
         <div id="options">
             <b>Dimensions</b>
             <div id="Dimensions"></div>
-            <br /><b>Twitch</b>
+            <b>Twitch</b>
             <div id="Twitch"></div>
-            <br /><b>Branches</b>
+            <b>Branches</b>
             <div id="Branches"></div>
-            <br /><b>Core</b>
+            <b>Core</b>
             <div id="Core"></div>
-            <br /><b>Glow</b>
+            <b>Glow</b>
             <div id="Glow"></div>
-            <br /><b>Glow Distortion</b>
+            <b>Glow Distortion</b>
             <div id="Glow_Distortion"></div>
         </div>
-        <script src="FractalNoise.js"></script>
-        <script src="NumberCircle.js"></script>
-        <script src="ConvolveMatrixFilter.js"></script>
-        <script src="PixelManipulator.js"></script>
-        <script src="lib/photopea.min.js"></script>
-        <script src="rasterizer.js"></script>
+
+        <!-- Vendor libs (non-module, loaded before app) -->
         <script src="lib/ygui.min.js"></script>
-        <script src="guibuild.js"></script>
-        <script src="code.js"></script>
-        <script src="accordion.js"></script>
-        <script src="exportbuttons.js"></script>
-        <script src="presets.js"></script>
+
+        <!-- App entry point -->
+        <script type="module" src="/src/main.js"></script>
     </body>
 </html>
