@@ -5,7 +5,6 @@ import { initExport } from './export.js';
 // --- Canvas references ---
 const canvases = {
     base: document.getElementById("baseCanv"),
-    displacementMap: document.getElementById("displacementMapCanv"),
     glow: document.getElementById("glowCanv"),
     final: document.getElementById("finalCanv"),
 };

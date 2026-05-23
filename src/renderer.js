@@ -1,30 +1,23 @@
 import { FractalNoise } from './FractalNoise.js';
 import { NumberCircle } from './NumberCircle.js';
 import { ConvolveMatrixFilter } from './ConvolveMatrixFilter.js';
-import { generateDisplacedPath, generateRealisticPath } from './pathGenerators.js';
+import { generateRealisticPath } from './pathGenerators.js';
 import { drawPathTree } from './pathRenderer.js';
 
 /**
  * Renders lightning onto the provided canvas set.
  *
- * @param {object} canvases - Object containing the four canvas elements:
- *   { base, displacementMap, glow, final }
+ * @param {object} canvases - Object containing the canvas elements:
+ *   { base, glow, final }
  * @param {object} options - Render parameters from the UI
  */
 export function renderLightning(canvases, options) {
-    const { base: baseCanv, displacementMap: displacementMapCanv, glow: glowCanv, final: finalCanv } = canvases;
+    const { base: baseCanv, glow: glowCanv, final: finalCanv } = canvases;
     const width = finalCanv.width;
     const height = finalCanv.height;
 
-    // --- Generate path based on mode ---
-    const mode = options.generationMode || "Displacement";
-    let path;
-
-    if (mode === "Realistic") {
-        path = generateRealisticPath(options, width, height);
-    } else {
-        path = generateDisplacedPath(options, width, height);
-    }
+    // --- Generate path ---
+    const path = generateRealisticPath(options, width, height);
 
     // --- Draw path onto base canvas ---
     const baseCtx = baseCanv.getContext("2d");

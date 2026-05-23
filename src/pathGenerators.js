@@ -1,5 +1,3 @@
-import { FractalNoise } from './FractalNoise.js';
-import { PixelManipulator } from './PixelManipulator.js';
 import { SeededRandom } from './SeededRandom.js';
 
 /**
@@ -14,82 +12,6 @@ import { SeededRandom } from './SeededRandom.js';
  * @property {PathPoint[]} points - ordered points along this segment
  * @property {LightningPath[]} children - branches spawning from this path
  */
-
-// ============================================================
-// DISPLACEMENT MODE (original algorithm wrapped in path interface)
-// ============================================================
-
-/**
- * Generate a lightning path using noise displacement (the original algorithm).
- *
- * @param {object} options - Render options from the UI
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
- * @returns {LightningPath}
- */
-export function generateDisplacedPath(options, width, height) {
-    // Generate noise map
-    const displacementMap = new FractalNoise(width, height, {
-        baseFrequency: [options.twitchScale, options.twitchScale],
-        type: options.noiseType === "Fractal" ? "fractalNoise" : "turbulence",
-        numOctaves: options.twitchOctaves,
-        seed: options.twitchSeed,
-        stitchTiles: "stitch"
-    });
-    displacementMap.render();
-    const manipulator = new PixelManipulator(displacementMap.canvas);
-
-    let twitchAmount = options.twitchAmount;
-    if (options.noiseType === "Perlin") twitchAmount /= 3;
-
-    const centerY = height / 2;
-    const startX = width / 2 - options.baseLength / 2;
-    const endX = startX + options.baseLength;
-    const baseThickness = options.coreSize;
-
-    // --- Main trunk ---
-    const trunkPoints = [];
-    for (let x = startX; x <= endX; x += 1) {
-        const [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(centerY));
-        const luma = (r + g + b) / (3 * 255);
-        const deltaPos = (luma - 0.5) * twitchAmount;
-        const displacedY = centerY + Math.round(deltaPos);
-
-        const progress = (x - startX) / options.baseLength;
-        const thickness = baseThickness * (1 - progress * options.taper / 100);
-        trunkPoints.push({ x, y: displacedY, thickness });
-    }
-
-    // --- Branches ---
-    const children = [];
-    const branchAngleRad = options.branchAngle * Math.PI / 180;
-    const branchSpace = options.baseLength / (options.numBranches + 1);
-
-    for (let i = 0; i < options.numBranches; i++) {
-        const flipBranch = (i % 2 === 0) ? 1 : -1;
-        const branchLength = options.branchLen - options.branchLenDelta * i;
-        const branchStartX = startX + (i + 1) * branchSpace;
-
-        const branchPoints = [];
-        for (let dist = 0; dist < branchLength; dist++) {
-            const x = branchStartX + dist * Math.cos(branchAngleRad);
-            const y = centerY + dist * Math.sin(branchAngleRad) * flipBranch;
-
-            const [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(y));
-            const luma = (r + g + b) / (3 * 255);
-            const deltaPos = (luma - 0.5) * twitchAmount;
-            const displacedY = y + Math.round(deltaPos);
-
-            const progress = dist / branchLength;
-            const startRadius = baseThickness * (1 - (branchStartX - startX) / options.baseLength * options.taper / 100);
-            const thickness = startRadius * (1 - progress * options.taper / 100);
-            branchPoints.push({ x, y: displacedY, thickness });
-        }
-        children.push({ points: branchPoints, children: [] });
-    }
-
-    return { points: trunkPoints, children };
-}
 
 // ============================================================
 // REALISTIC MODE (recursive midpoint displacement)
