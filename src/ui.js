@@ -8,6 +8,7 @@ const tooltips = {
     taper: "How much the bolt thins toward the end (0 = uniform, 100 = full taper)",
     outputWidth: "Output canvas width in pixels",
     outputHeight: "Output canvas height in pixels",
+    edgeFade: "Fade to black at canvas edges to prevent glow spill (px from edge)",
     realisticSeed: "Random seed for bolt shape (same seed = same shape)",
     realisticDetail: "Subdivision depth (higher = more jagged detail)",
     realisticDisplacement: "How far the bolt deviates from a straight line",
@@ -36,6 +37,7 @@ const guiSections = {
     Output: [
         { label: "Width", id: "outputWidth", type: "number", attr: { value: 2000, step: 100, min: 100, max: 8000 } },
         { label: "Height", id: "outputHeight", type: "number", attr: { value: 1000, step: 100, min: 100, max: 4000 } },
+        { label: "Edge Fade", id: "edgeFade", type: "number", attr: { value: 0, step: 5, min: 0, max: 500 } },
     ],
     Dimensions: [
         { label: "Length", id: "baseLength", type: "number", attr: { value: 1000, step: 1 } },

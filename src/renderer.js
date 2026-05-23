@@ -117,4 +117,65 @@ export function renderLightning(canvases, options) {
         lensBlur.destroy();
         finalCtx.drawImage(tempCanv, 0, 0, width, height);
     }
+
+    // --- Edge fade: draw black-to-transparent gradients from each edge ---
+    const edgeFade = options.edgeFade ?? 0;
+    if (edgeFade > 0) {
+        finalCtx.restore();
+        finalCtx.save();
+        finalCtx.globalCompositeOperation = "destination-in";
+
+        // Create a gradient mask: fully opaque in the center, fading to transparent at edges
+        // We draw a filled rect with a composite gradient
+        const maskCanv = document.createElement("canvas");
+        maskCanv.width = width;
+        maskCanv.height = height;
+        const maskCtx = maskCanv.getContext("2d");
+
+        // Start fully opaque
+        maskCtx.fillStyle = "white";
+        maskCtx.fillRect(0, 0, width, height);
+
+        // Fade from each edge using destination-out with gradients
+        maskCtx.globalCompositeOperation = "destination-out";
+
+        // Left edge
+        let grad = maskCtx.createLinearGradient(0, 0, edgeFade, 0);
+        grad.addColorStop(0, "white");
+        grad.addColorStop(1, "transparent");
+        maskCtx.fillStyle = grad;
+        maskCtx.fillRect(0, 0, edgeFade, height);
+
+        // Right edge
+        grad = maskCtx.createLinearGradient(width, 0, width - edgeFade, 0);
+        grad.addColorStop(0, "white");
+        grad.addColorStop(1, "transparent");
+        maskCtx.fillStyle = grad;
+        maskCtx.fillRect(width - edgeFade, 0, edgeFade, height);
+
+        // Top edge
+        grad = maskCtx.createLinearGradient(0, 0, 0, edgeFade);
+        grad.addColorStop(0, "white");
+        grad.addColorStop(1, "transparent");
+        maskCtx.fillStyle = grad;
+        maskCtx.fillRect(0, 0, width, edgeFade);
+
+        // Bottom edge
+        grad = maskCtx.createLinearGradient(0, height, 0, height - edgeFade);
+        grad.addColorStop(0, "white");
+        grad.addColorStop(1, "transparent");
+        maskCtx.fillStyle = grad;
+        maskCtx.fillRect(0, height - edgeFade, width, edgeFade);
+
+        // Apply the mask
+        finalCtx.drawImage(maskCanv, 0, 0);
+        finalCtx.restore();
+        finalCtx.save();
+
+        // Fill the faded areas with black (since we're on a black background)
+        finalCtx.globalCompositeOperation = "destination-over";
+        finalCtx.fillStyle = "black";
+        finalCtx.fillRect(0, 0, width, height);
+        finalCtx.restore();
+    }
 }
