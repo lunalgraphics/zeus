@@ -97,12 +97,15 @@ export function generateDisplacedPath(options, width, height) {
 
 /**
  * Generate a lightning path using recursive midpoint displacement.
- * Produces natural-looking branching with stochastic sub-branches.
  *
- * Uses separate RNG streams for shape vs. branching decisions so that
- * changing detail level doesn't alter which branches spawn.
- * Branching is evaluated by distance along the path (not by point index)
- * so branch density stays consistent regardless of subdivision depth.
+ * Key design: branch slots are pre-allocated at normalized positions (0–1)
+ * BEFORE subdivision happens. This means changing the detail level only
+ * refines the geometry — it cannot change which branches exist or where
+ * they attach, because those decisions were already made.
+ *
+ * Each branch (and sub-branch) gets its own isolated shape RNG seeded
+ * deterministically from its slot data, so branches don't interfere with
+ * each other's geometry.
  *
  * @param {object} options - Render options including realistic-mode params
  * @param {number} width - Canvas width
@@ -110,10 +113,7 @@ export function generateDisplacedPath(options, width, height) {
  * @returns {LightningPath}
  */
 export function generateRealisticPath(options, width, height) {
-    // Separate RNG streams: one for geometry, one for branching
     const seed = options.realisticSeed ?? 42;
-    const shapeRng = new SeededRandom(seed);
-    const branchRng = new SeededRandom(seed + 7919); // offset by a prime
 
     const centerY = height / 2;
     const startX = width / 2 - options.baseLength / 2;
@@ -131,27 +131,60 @@ export function generateRealisticPath(options, width, height) {
     const baseThickness = options.coreSize;
     const taper = options.taper;
 
-    // Distance between branch evaluation points (in pixels along the path).
-    // This keeps branch density independent of point count.
-    const BRANCH_EVAL_SPACING = 12;
+    // Fixed spacing (in normalized 0–1 units) between branch evaluation slots.
+    // For a 1000px bolt this means one evaluation every ~12px.
+    const EVAL_SPACING_NORMALIZED = 0.012;
+
+    /**
+     * Pre-allocate branch slots for a segment.
+     * Decides WHERE branches go and their parameters using a dedicated RNG,
+     * completely independent of subdivision.
+     *
+     * Returns an array of branch slot descriptors sorted by normalized position.
+     * Each slot has: { t, angleDelta, lengthFactor, childSeed }
+     *   - t: normalized position along parent (0–1), excluding endpoints
+     *   - angleDelta: angle offset from tangent (radians)
+     *   - lengthFactor: fraction of remaining length for this branch
+     *   - childSeed: seed for this child's own shape + sub-branch RNG
+     */
+    function allocateBranchSlots(branchDepth, slotSeed) {
+        if (branchDepth >= maxBranchDepth || branchChance <= 0) return [];
+
+        const slotRng = new SeededRandom(slotSeed);
+        const slots = [];
+
+        // Walk from just past the start to just before the end
+        for (let t = EVAL_SPACING_NORMALIZED; t < 0.95; t += EVAL_SPACING_NORMALIZED) {
+            if (slotRng.next() < branchChance) {
+                slots.push({
+                    t,
+                    angleDelta: slotRng.range(-branchAngleRange, branchAngleRange) * Math.PI / 180,
+                    lengthFactor: branchLenFactor * slotRng.range(0.4, 1.0),
+                    childSeed: Math.floor(slotRng.next() * 2147483647),
+                });
+            }
+        }
+
+        return slots;
+    }
 
     /**
      * Recursively subdivide a line segment with random midpoint displacement.
-     * Uses shapeRng so geometry is independent of branching.
+     * Uses its own RNG instance so it's fully isolated.
      */
     function subdivide(rng, p1, p2, depth, scale) {
         if (depth === 0) {
             return [p1, p2];
         }
 
-        const midX = (p1.x + p2.x) / 2;
-        const midY = (p1.y + p2.y) / 2;
-
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
         const len = Math.sqrt(dx * dx + dy * dy);
 
         if (len === 0) return [p1, p2];
+
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
 
         // Perpendicular unit vector
         const perpX = -dy / len;
@@ -171,21 +204,57 @@ export function generateRealisticPath(options, width, height) {
     }
 
     /**
-     * Generate a full branch (trunk or sub-branch) with recursive subdivision
-     * and probabilistic child branches.
+     * Given a subdivided path and a normalized position t (0–1),
+     * find the interpolated point and tangent at that position.
      */
-    function generateBranch(p1, p2, depth, branchDepth, thickness) {
-        // Each branch gets its own shape RNG derived from the parent branchRng
-        // so that adding/removing branches doesn't shift sibling geometry.
-        const branchShapeSeed = branchDepth === 0
-            ? seed
-            : Math.floor(branchRng.next() * 2147483647);
-        const localShapeRng = branchDepth === 0 ? shapeRng : new SeededRandom(branchShapeSeed);
+    function samplePathAt(points, totalLen, t) {
+        const targetDist = t * totalLen;
+        let accDist = 0;
 
-        const rawPoints = subdivide(localShapeRng, p1, p2, depth, displacement * (0.5 ** (branchDepth * 0.3)));
+        for (let i = 1; i < points.length; i++) {
+            const dx = points[i].x - points[i - 1].x;
+            const dy = points[i].y - points[i - 1].y;
+            const segLen = Math.sqrt(dx * dx + dy * dy);
+
+            if (accDist + segLen >= targetDist) {
+                // Interpolate within this segment
+                const remainder = targetDist - accDist;
+                const frac = segLen > 0 ? remainder / segLen : 0;
+                const x = points[i - 1].x + dx * frac;
+                const y = points[i - 1].y + dy * frac;
+                const thickness = points[i - 1].thickness + (points[i].thickness - points[i - 1].thickness) * frac;
+                const tangentAngle = Math.atan2(dy, dx);
+                return { x, y, thickness, tangentAngle };
+            }
+            accDist += segLen;
+        }
+
+        // Fallback: return last point
+        const last = points[points.length - 1];
+        const prev = points[points.length - 2] || last;
+        const tangentAngle = Math.atan2(last.y - prev.y, last.x - prev.x);
+        return { x: last.x, y: last.y, thickness: last.thickness, tangentAngle };
+    }
+
+    /**
+     * Generate a full branch (trunk or sub-branch).
+     *
+     * Steps:
+     * 1. Pre-allocate branch slots (positions + params) using slotSeed
+     * 2. Subdivide the geometry using shapeSeed
+     * 3. Map branch slots onto the subdivided path
+     * 4. Recursively generate child branches
+     */
+    function generateBranch(p1, p2, depth, branchDepth, thickness, shapeSeed, slotSeed) {
+        // Step 1: Pre-allocate branch slots (independent of subdivision)
+        const branchSlots = allocateBranchSlots(branchDepth, slotSeed);
+
+        // Step 2: Subdivide geometry with isolated RNG
+        const shapeRng = new SeededRandom(shapeSeed);
+        const rawPoints = subdivide(shapeRng, p1, p2, depth, displacement * (0.5 ** (branchDepth * 0.3)));
         const totalLen = computePathLength(rawPoints);
 
-        // Assign thickness with taper
+        // Step 3: Assign thickness with taper
         const points = [];
         let accLen = 0;
         for (let i = 0; i < rawPoints.length; i++) {
@@ -199,47 +268,37 @@ export function generateRealisticPath(options, width, height) {
             points.push({ x: rawPoints[i].x, y: rawPoints[i].y, thickness: Math.max(t, 0.5) });
         }
 
-        // Spawn child branches by walking along the path at fixed distance intervals.
-        // This makes branch density independent of point count (detail level).
+        // Step 4: Map pre-allocated slots onto the subdivided path and recurse
         const children = [];
-        if (branchDepth < maxBranchDepth && branchChance > 0) {
-            let distSinceLastEval = 0;
-            let accumDist = 0;
+        for (const slot of branchSlots) {
+            const sample = samplePathAt(points, totalLen, slot.t);
 
-            for (let i = 1; i < points.length - 1; i++) {
-                const dx = points[i].x - points[i - 1].x;
-                const dy = points[i].y - points[i - 1].y;
-                const segLen = Math.sqrt(dx * dx + dy * dy);
-                accumDist += segLen;
-                distSinceLastEval += segLen;
+            const branchAngle = sample.tangentAngle + slot.angleDelta;
+            const remainingLen = totalLen * (1 - slot.t);
+            const branchLen = remainingLen * slot.lengthFactor;
 
-                if (distSinceLastEval < BRANCH_EVAL_SPACING) continue;
-                distSinceLastEval = 0;
+            const branchEnd = {
+                x: sample.x + Math.cos(branchAngle) * branchLen,
+                y: sample.y + Math.sin(branchAngle) * branchLen,
+            };
 
-                // Use branchRng for the decision — independent of shape subdivision
-                if (branchRng.next() < branchChance) {
-                    const origin = points[i];
-                    const progress = accumDist / totalLen;
+            const childThickness = sample.thickness * 0.6;
+            const childDepth = Math.max(depth - 2, 3);
 
-                    // Branch direction: tangent + random angle offset
-                    const next = points[Math.min(i + 1, points.length - 1)];
-                    const tangentAngle = Math.atan2(next.y - origin.y, next.x - origin.x);
-                    const branchAngle = tangentAngle + branchRng.range(-branchAngleRange, branchAngleRange) * Math.PI / 180;
+            // Each child gets deterministic seeds derived from its slot
+            const childShapeSeed = slot.childSeed;
+            const childSlotSeed = slot.childSeed + 4919;
 
-                    const remainingLen = totalLen * (1 - progress);
-                    const branchLen = remainingLen * branchLenFactor * branchRng.range(0.4, 1.0);
-
-                    const branchEnd = {
-                        x: origin.x + Math.cos(branchAngle) * branchLen,
-                        y: origin.y + Math.sin(branchAngle) * branchLen,
-                    };
-
-                    const childThickness = origin.thickness * 0.6;
-                    const childDepth = Math.max(depth - 2, 3);
-                    const child = generateBranch(origin, branchEnd, childDepth, branchDepth + 1, childThickness);
-                    children.push(child);
-                }
-            }
+            const child = generateBranch(
+                { x: sample.x, y: sample.y },
+                branchEnd,
+                childDepth,
+                branchDepth + 1,
+                childThickness,
+                childShapeSeed,
+                childSlotSeed
+            );
+            children.push(child);
         }
 
         return { points, children };
@@ -255,5 +314,6 @@ export function generateRealisticPath(options, width, height) {
         return len;
     }
 
-    return generateBranch(start, end, maxDepth, 0, baseThickness);
+    // Trunk uses seed for shape, seed + 7919 for branch slot allocation
+    return generateBranch(start, end, maxDepth, 0, baseThickness, seed, seed + 7919);
 }
