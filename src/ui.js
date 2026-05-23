@@ -166,6 +166,13 @@ export function initPresets(markDirty) {
         applyPresetToDOM(JSON.parse(this.value), markDirty);
     });
 
+    // Reset button: re-apply the currently selected preset
+    document.getElementById("resetPreset").addEventListener("click", () => {
+        if (selector.value) {
+            applyPresetToDOM(JSON.parse(selector.value), markDirty);
+        }
+    });
+
     // Save preset button
     document.getElementById("savePreset").addEventListener("click", () => {
         const name = prompt("Preset name:");
