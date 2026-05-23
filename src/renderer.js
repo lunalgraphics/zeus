@@ -76,11 +76,13 @@ export function renderLightning(canvases, options) {
     if (options.glowNoiseType === "Perlin") glowDistortionOpacity /= 3;
     if (glowDistortionOpacity > 100) glowDistortionContrast += glowDistortionOpacity - 100;
 
-    finalCtx.globalCompositeOperation = "overlay";
-    finalCtx.filter = `saturate(0) opacity(${glowDistortionOpacity}%) contrast(${glowDistortionContrast}%)`;
-    finalCtx.drawImage(glowDistortionMap.canvas, 0, 0);
-    finalCtx.restore();
-    finalCtx.save();
+    if (glowDistortionOpacity > 0) {
+        finalCtx.globalCompositeOperation = "overlay";
+        finalCtx.filter = `saturate(0) opacity(${glowDistortionOpacity}%) contrast(${glowDistortionContrast}%)`;
+        finalCtx.drawImage(glowDistortionMap.canvas, 0, 0);
+        finalCtx.restore();
+        finalCtx.save();
+    }
 
     // --- Core with lens blur ---
     if (options.softness < 8) {

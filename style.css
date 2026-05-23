@@ -1,5 +1,9 @@
 :root {
     --text-font: "Orbitron", "Segoe UI", sans-serif;
+    --bg: #11111a;
+    --accent: deepskyblue;
+    --input-bg: #001122;
+    --border: aliceblue;
 }
 
 body {
@@ -7,7 +11,7 @@ body {
     font-weight: 100;
     font-size: 16px;
     user-select: none;
-    background-color: #11111a;
+    background-color: var(--bg);
     color: aliceblue;
     overflow-y: scroll;
     margin: 0;
@@ -19,7 +23,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #11111a;
+    background-color: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -39,6 +43,14 @@ body {
     padding: 12px 0;
 }
 
+.toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 #previewSpace {
     width: 600px;
 }
@@ -48,7 +60,16 @@ body {
 }
 
 .preset-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.preset-row label {
+    font-size: 14px;
 }
 
 /* --- Typography --- */
@@ -58,11 +79,11 @@ b {
     transition: color 0.2s;
     cursor: pointer;
     display: block;
-    padding: 4px 0;
+    padding: 6px 0;
 }
 
 b:hover {
-    color: deepskyblue;
+    color: var(--accent);
 }
 
 /* --- Form controls --- */
@@ -71,44 +92,65 @@ input, select {
     font-size: 12px;
     font-weight: 100;
     font-family: var(--text-font);
-    background-color: #001122;
+    background-color: var(--input-bg);
     color: aliceblue;
     width: 69px;
-    border: 1px solid aliceblue;
+    border: 1px solid var(--border);
     border-radius: 2px;
     transition: 0.2s;
+    padding: 2px 4px;
 }
 
 input:focus, select:focus {
     outline: none;
-    border: 1px solid deepskyblue;
-    color: deepskyblue;
+    border: 1px solid var(--accent);
+    color: var(--accent);
 }
 
 input[type="color"] {
     height: 21px;
     width: 21px;
+    padding: 0;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    accent-color: var(--accent);
 }
 
 label {
     transition: color 0.2s;
+    font-size: 13px;
 }
 
 button {
     font-family: var(--text-font);
-    background-color: #001122;
+    background-color: var(--input-bg);
     color: aliceblue;
     font-weight: 400;
-    border: 1px solid aliceblue;
+    font-size: 13px;
+    border: 1px solid var(--border);
     border-radius: 2px;
     transition: 0.2s;
-    padding: 4px 12px;
+    padding: 5px 12px;
     cursor: pointer;
 }
 
 button:hover {
-    border: 1px solid deepskyblue;
-    color: deepskyblue;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+button.small-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+}
+
+/* --- Tooltips --- */
+
+label[title] {
+    cursor: help;
+    border-bottom: 1px dotted rgba(240, 248, 255, 0.3);
 }
 
 /* --- Options panel --- */
@@ -116,6 +158,7 @@ button:hover {
 #options {
     width: calc(600px - 57px);
     margin: 0 auto;
+    padding-bottom: 40px;
 }
 
 #presetselector {
@@ -129,6 +172,22 @@ button:hover {
         width: 100%;
     }
     #options {
-        width: calc(100% - 57px);
+        width: calc(100% - 24px);
+    }
+    input, select {
+        font-size: 14px;
+        padding: 4px 6px;
+        width: 80px;
+    }
+    button {
+        font-size: 14px;
+        padding: 8px 14px;
+    }
+    b {
+        padding: 10px 0;
+        font-size: 17px;
+    }
+    label {
+        font-size: 14px;
     }
 }

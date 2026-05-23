@@ -18,8 +18,12 @@ export const builtInPresets = {
 export function getPresetFromDOM() {
     const presetData = {};
     for (const inputElem of document.querySelectorAll("#options input, #options select")) {
-        presetData[inputElem.id] = inputElem.value;
-        if (!isNaN(inputElem.value)) presetData[inputElem.id] = parseFloat(inputElem.value);
+        if (inputElem.type === "checkbox") {
+            presetData[inputElem.id] = inputElem.checked;
+        } else {
+            presetData[inputElem.id] = inputElem.value;
+            if (!isNaN(inputElem.value)) presetData[inputElem.id] = parseFloat(inputElem.value);
+        }
     }
     return presetData;
 }
@@ -30,7 +34,12 @@ export function getPresetFromDOM() {
 export function applyPresetToDOM(presetData, markDirty) {
     for (const key in presetData) {
         const el = document.getElementById(key);
-        if (el) el.value = presetData[key];
+        if (!el) continue;
+        if (el.type === "checkbox") {
+            el.checked = !!presetData[key];
+        } else {
+            el.value = presetData[key];
+        }
     }
     if (markDirty) markDirty();
 }

@@ -2,10 +2,10 @@ import Photopea from 'photopea';
 
 /**
  * Set up export button behavior.
- * In Photopea plugin mode, sends the canvas to the parent document.
- * Otherwise, downloads as PNG.
+ * - "Export PNG": downloads the final canvas as PNG
+ * - Photopea plugin mode: sends to parent document with screen blend
  */
-export function initExport(getFinalCanvas) {
+export function initExport(canvases) {
     const isPhotopeaPlugin = new URLSearchParams(location.search).get("photopeaPlugin") === "yes";
     const exportBtn = document.querySelector("#exportPNG");
 
@@ -14,11 +14,9 @@ export function initExport(getFinalCanvas) {
         const pea = new Photopea(window.parent);
 
         exportBtn.addEventListener("click", async () => {
-            const finalCanv = getFinalCanvas();
-            await pea.openFromURL(finalCanv.toDataURL());
+            await pea.openFromURL(canvases.final.toDataURL());
             await pea.runScript("app.activeDocument.activeLayer.blendMode = 'scrn';");
             await pea.runScript("app.activeDocument.activeLayer.name = 'Zeus';");
-            // Open free transform
             await pea.runScript(`
                 var cTID = charIDToTypeID;
                 var desc1 = new ActionDescriptor();
@@ -30,9 +28,8 @@ export function initExport(getFinalCanvas) {
         });
     } else {
         exportBtn.addEventListener("click", () => {
-            const finalCanv = getFinalCanvas();
             const a = document.createElement("a");
-            a.href = finalCanv.toDataURL();
+            a.href = canvases.final.toDataURL("image/png");
             a.download = "Zeus.png";
             a.click();
         });

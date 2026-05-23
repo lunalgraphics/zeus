@@ -15,17 +15,26 @@
     </head>
     <body>
         <div class="preview-container">
-            <button id="exportPNG">Export PNG</button>
+            <div class="toolbar">
+                <button id="exportPNG">Export PNG</button>
+                <button id="randomize">Randomize</button>
+            </div>
             <div id="previewSpace">
                 <canvas id="baseCanv" width="2000" height="1000" style="display: none;"></canvas>
                 <canvas id="glowCanv" width="2000" height="1000" style="display: none;"></canvas>
                 <canvas id="finalCanv" width="2000" height="1000"></canvas>
             </div>
             <div class="preset-row">
-                Preset: <select id="presetselector"></select>
+                <label>Preset:</label>
+                <select id="presetselector"></select>
+                <button id="savePreset" class="small-btn">Save</button>
+                <button id="exportPreset" class="small-btn">Export</button>
+                <button id="importPreset" class="small-btn">Import</button>
             </div>
         </div>
         <div id="options">
+            <b>Output</b>
+            <div id="Output"></div>
             <b>Dimensions</b>
             <div id="Dimensions"></div>
             <b>Shape</b>
