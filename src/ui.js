@@ -146,6 +146,12 @@ export function initPresets(markDirty) {
         selector.appendChild(option);
     }
 
+    // Apply the first preset as default
+    const firstPresetKey = Object.keys(builtInPresets)[0];
+    if (firstPresetKey) {
+        applyPresetToDOM(builtInPresets[firstPresetKey], markDirty);
+    }
+
     // Custom presets from localStorage
     const customPresets = loadCustomPresets();
     if (Object.keys(customPresets).length > 0) {
