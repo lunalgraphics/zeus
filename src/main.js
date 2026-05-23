@@ -1,6 +1,7 @@
 import { renderLightning } from './renderer.js';
 import { buildGUI, initAccordion, initPresets, initInputListeners } from './ui.js';
 import { initExport } from './export.js';
+import { getAllOptionsFromDOM } from './presets.js';
 
 // --- Canvas references ---
 const canvases = {
@@ -19,7 +20,7 @@ function markDirty() {
 buildGUI();
 initAccordion();
 initPresets(markDirty);
-const getOptions = initInputListeners(markDirty);
+initInputListeners(markDirty);
 initExport(canvases);
 
 // --- Resize canvases based on output settings ---
@@ -32,7 +33,7 @@ function updateCanvasSize(width, height) {
 
 // --- Render function ---
 function renderFromInputs() {
-    const options = getOptions();
+    const options = getAllOptionsFromDOM();
 
     // Update canvas size if changed
     const width = options.outputWidth || 2000;

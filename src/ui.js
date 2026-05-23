@@ -247,7 +247,6 @@ function saveCustomPresets(presets) {
 
 /**
  * Wire up input change listeners for live re-rendering.
- * Returns a function to read current options from the DOM.
  */
 export function initInputListeners(markDirty) {
     for (const inputElem of document.querySelectorAll("#options input, #options select")) {
@@ -261,5 +260,4 @@ export function initInputListeners(markDirty) {
             if (label) label.style.color = "";
         });
     }
-    return getPresetFromDOM;
 }
