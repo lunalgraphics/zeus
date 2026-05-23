@@ -18,6 +18,7 @@ const tooltips = {
     realisticBranchAngle: "Max angle branches can deviate from trunk tangent",
     realisticMaxBranchDepth: "How many levels of sub-branching (0 = no branches)",
     coreSize: "Thickness of the bolt core in pixels",
+    corePulse: "Organic thickness variation along the bolt (0 = uniform, higher = more pulsing)",
     softness: "Lens blur radius for the core (higher = softer edges)",
     coreColor: "Color of the bright inner core",
     glowDepth: "Number of blur passes for the glow (more = wider glow)",
@@ -57,6 +58,7 @@ const guiSections = {
     ],
     Core: [
         { label: "Size", id: "coreSize", type: "number", attr: { value: 7, step: 1 } },
+        { label: "Pulse", id: "corePulse", type: "number", attr: { value: 30, step: 5, min: 0, max: 100 } },
         { label: "Softness", id: "softness", type: "number", attr: { value: 4, step: 1, min: 0, max: 29 } },
         { label: "Color", id: "coreColor", type: "color", attr: { value: "#FFFFFF" } },
     ],

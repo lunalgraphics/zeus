@@ -52,6 +52,7 @@ export function generateRealisticPath(options, width, height) {
     const maxBranchDepth = options.realisticMaxBranchDepth ?? 4;
     const baseThickness = options.coreSize;
     const taper = options.taper;
+    const pulse = options.corePulse ?? 0;
 
     // Fixed spacing (in normalized 0–1 units) between branch evaluation slots.
     // For a 1000px bolt this means one evaluation every ~12px.
@@ -182,9 +183,15 @@ export function generateRealisticPath(options, width, height) {
         const rawPoints = subdivide(shapeRng, p1, p2, depth, maxDisplacement);
         const totalLen = computePathLength(rawPoints);
 
-        // Step 3: Assign thickness with taper
+        // Step 3: Assign thickness with taper and pulse
         const points = [];
         let accLen = 0;
+        // Use a separate RNG for pulse so it doesn't affect shape
+        const pulseRng = new SeededRandom(shapeSeed + 3137);
+        // Pre-generate pulse values using layered noise (cheap 1D fractal noise)
+        const numPoints = rawPoints.length;
+        const pulseValues = generatePulseNoise(pulseRng, numPoints, pulse / 100);
+
         for (let i = 0; i < rawPoints.length; i++) {
             if (i > 0) {
                 const dx = rawPoints[i].x - rawPoints[i - 1].x;
@@ -192,7 +199,9 @@ export function generateRealisticPath(options, width, height) {
                 accLen += Math.sqrt(dx * dx + dy * dy);
             }
             const progress = accLen / totalLen;
-            const t = thickness * (1 - progress * taper / 100);
+            let t = thickness * (1 - progress * taper / 100);
+            // Apply pulse: modulate thickness by ±pulse%
+            t *= (1 + pulseValues[i]);
             points.push({ x: rawPoints[i].x, y: rawPoints[i].y, thickness: Math.max(t, 0.5) });
         }
 
@@ -230,6 +239,48 @@ export function generateRealisticPath(options, width, height) {
         }
 
         return { points, children };
+    }
+
+    /**
+     * Generate 1D fractal noise values for thickness pulsation.
+     * Returns an array of values in [-amplitude, +amplitude].
+     * Uses layered random walks at different frequencies for organic variation.
+     */
+    function generatePulseNoise(rng, count, amplitude) {
+        if (amplitude === 0 || count === 0) return new Array(count).fill(0);
+
+        const values = new Array(count).fill(0);
+
+        // Layer multiple octaves of random walk for fractal-like variation
+        const octaves = 4;
+        let freq = Math.max(1, Math.floor(count / 8)); // base wavelength
+        let amp = amplitude;
+
+        for (let oct = 0; oct < octaves; oct++) {
+            // Generate control points at this frequency
+            const numControlPoints = Math.max(2, Math.floor(count / freq));
+            const controlPoints = [];
+            for (let j = 0; j < numControlPoints; j++) {
+                controlPoints.push(rng.nextSigned() * amp);
+            }
+
+            // Interpolate between control points (cosine interpolation for smoothness)
+            for (let i = 0; i < count; i++) {
+                const pos = (i / count) * (numControlPoints - 1);
+                const idx = Math.floor(pos);
+                const frac = pos - idx;
+                const a = controlPoints[Math.min(idx, numControlPoints - 1)];
+                const b = controlPoints[Math.min(idx + 1, numControlPoints - 1)];
+                // Cosine interpolation
+                const t = (1 - Math.cos(frac * Math.PI)) / 2;
+                values[i] += a + (b - a) * t;
+            }
+
+            freq = Math.max(1, Math.floor(freq / 2));
+            amp *= 0.5;
+        }
+
+        return values;
     }
 
     function computePathLength(pts) {
