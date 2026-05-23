@@ -15,6 +15,7 @@ const guiSections = {
         { label: "Displacement", id: "realisticDisplacement", type: "number", attr: { value: 150, step: 5, min: 0 } },
     ],
     Branches: [
+        { label: "Seed", id: "realisticBranchSeed", type: "number", attr: { value: 7919, step: 1 } },
         { label: "Chance", id: "realisticBranchChance", type: "number", attr: { value: 0.02, step: 0.005, min: 0, max: 0.3 } },
         { label: "Length", id: "realisticBranchLength", type: "number", attr: { value: 0.4, step: 0.05, min: 0, max: 1.0 } },
         { label: "Angle", id: "realisticBranchAngle", type: "number", attr: { value: 30, step: 1, min: 0, max: 90 } },

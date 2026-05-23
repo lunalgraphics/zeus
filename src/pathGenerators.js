@@ -236,6 +236,7 @@ export function generateRealisticPath(options, width, height) {
         return len;
     }
 
-    // Trunk uses seed for shape, seed + 7919 for branch slot allocation
-    return generateBranch(start, end, maxDepth, 0, baseThickness, seed, seed + 7919);
+    // Trunk uses seed for shape, branchSeed for branch slot allocation
+    const branchSeed = options.realisticBranchSeed ?? (seed + 7919);
+    return generateBranch(start, end, maxDepth, 0, baseThickness, seed, branchSeed);
 }
