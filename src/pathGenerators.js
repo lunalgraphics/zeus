@@ -172,8 +172,14 @@ export function generateRealisticPath(options, width, height) {
         const branchSlots = allocateBranchSlots(branchDepth, slotSeed);
 
         // Step 2: Subdivide geometry with isolated RNG
+        // Scale displacement relative to segment length to prevent short branches
+        // from curling back on themselves. Use the lesser of the global displacement
+        // and a fraction of the segment's straight-line length.
         const shapeRng = new SeededRandom(shapeSeed);
-        const rawPoints = subdivide(shapeRng, p1, p2, depth, displacement * (0.5 ** (branchDepth * 0.3)));
+        const straightLen = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+        const depthScale = 0.5 ** (branchDepth * 0.3);
+        const maxDisplacement = Math.min(displacement * depthScale, straightLen * 0.4);
+        const rawPoints = subdivide(shapeRng, p1, p2, depth, maxDisplacement);
         const totalLen = computePathLength(rawPoints);
 
         // Step 3: Assign thickness with taper
