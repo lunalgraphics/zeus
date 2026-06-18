@@ -1,7 +1,8 @@
 import Photopea from "photopea";
+const { VITE_BUILD_MODE } = import.meta.env;
 
 export default function activateExportButtons() {
-    if (new URLSearchParams(location.search).get("photopeaPlugin") == "yes") {
+    if (VITE_BUILD_MODE === "photopea") {
         document.querySelector("#exportPNG").innerText = "Add to document";
         let pea = new Photopea(window.parent);
         document.querySelector("#exportPNG").addEventListener("click", async () => {

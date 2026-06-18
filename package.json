@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite dev",
     "build": "vite build",
+    "build:photopea": "cross-env VITE_BUILD_MODE=photopea vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "vite": "^8.0.12"
   },
   "dependencies": {

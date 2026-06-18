@@ -10,8 +10,10 @@ import activateExportButtons from "./ui/activateExportButtons.js";
 
 import { buildPresetSelector } from "./data/presets.js";
 
-// For debugging
-window.Alpine = Alpine;
+if (import.meta.env.DEV) {
+    console.log("Welcome, developer.");
+    window.Alpine = Alpine;
+}
 
 Alpine.start();
 
