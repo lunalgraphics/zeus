@@ -78,3 +78,5 @@ class FractalNoise {
         svg.remove();
     }
 }
+
+export default FractalNoise;

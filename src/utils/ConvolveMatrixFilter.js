@@ -40,3 +40,5 @@ class ConvolveMatrixFilter {
         if (this._svg) this._svg.remove();
     }
 }
+
+export default ConvolveMatrixFilter;

@@ -34,3 +34,5 @@ class NumberCircle {
         return output;
     }
 }
+
+export default NumberCircle;

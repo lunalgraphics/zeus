@@ -34,3 +34,5 @@ class PixelManipulator {
         this.ctx.putImageData(this.imageData, 0, 0);
     }
 }
+
+export default PixelManipulator;

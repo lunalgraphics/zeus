@@ -1,4 +1,21 @@
-let unsavedChanges = false;
+import ConvolveMatrixFilter from "./utils/ConvolveMatrixFilter.js";
+import FractalNoise from "./utils/FractalNoise.js";
+import NumberCircle from "./utils/NumberCircle.js";
+import PixelManipulator from "./utils/PixelManipulator.js";
+
+import buildGUI from "./ui/buildGUI.js";
+import activateExportButtons from "./ui/activateExportButtons.js";
+import activateAccordions from "./ui/activateAccordions.js";
+
+import { buildPresetSelector } from "./data/presets.js";
+
+
+buildGUI();
+activateExportButtons();
+activateAccordions();
+buildPresetSelector();
+
+window.unsavedChanges = false;
 
 function renderLightning(options, cooled=true) {
 
@@ -173,7 +190,7 @@ let baseRenderTime = endTime - startTime;
 
 for (var inputElem of document.querySelectorAll("#options input, #options select")) {
     inputElem.addEventListener("input", () => {
-        unsavedChanges = true;
+        window.unsavedChanges = true;
     });
 
     inputElem.addEventListener("focus", function(e) {
@@ -185,14 +202,14 @@ for (var inputElem of document.querySelectorAll("#options input, #options select
 }
 
 let tick = () => {
-    if (unsavedChanges) {
+    if (window.unsavedChanges) {
         try {
             renderFromInputs();
         }
         catch(err) {
             console.log(err);
         }
-        unsavedChanges = false;
+        window.unsavedChanges = false;
     }
     setTimeout(tick, 20);
 };
