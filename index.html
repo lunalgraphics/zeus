@@ -25,18 +25,30 @@
             Preset: <select id="presetselector"></select> <br />
         </center>
         <div id="options">
-            <b>Dimensions</b>
-            <div id="Dimensions"></div>
-            <br /><b>Twitch</b>
-            <div id="Twitch"></div>
-            <br /><b>Branches</b>
-            <div id="Branches"></div>
-            <br /><b>Core</b>
-            <div id="Core"></div>
-            <br /><b>Glow</b>
-            <div id="Glow"></div>
-            <br /><b>Glow Distortion</b>
-            <div id="Glow_Distortion"></div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Dimensions</b>
+              <div x-show="open" x-collapse id="Dimensions"></div>
+            </div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Twitch</b>
+              <div x-show="open" x-collapse id="Twitch"></div>
+            </div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Branches</b>
+              <div x-show="open" x-collapse id="Branches"></div>
+            </div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Core</b>
+              <div x-show="open" x-collapse id="Core"></div>
+            </div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Glow</b>
+              <div x-show="open" x-collapse id="Glow"></div>
+            </div>
+            <div x-data="{ open: false }">
+              <b @click="open = !open">Glow Distortion</b>
+              <div x-show="open" x-collapse id="Glow_Distortion"></div>
+            </div>
         </div>
         
         <script type="module" src="./src/main.js"></script>

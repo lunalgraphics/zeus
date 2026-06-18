@@ -1,3 +1,5 @@
+import Alpine from "alpinejs";
+
 import ConvolveMatrixFilter from "./utils/ConvolveMatrixFilter.js";
 import FractalNoise from "./utils/FractalNoise.js";
 import NumberCircle from "./utils/NumberCircle.js";
@@ -5,14 +7,16 @@ import PixelManipulator from "./utils/PixelManipulator.js";
 
 import buildGUI from "./ui/buildGUI.js";
 import activateExportButtons from "./ui/activateExportButtons.js";
-import activateAccordions from "./ui/activateAccordions.js";
 
 import { buildPresetSelector } from "./data/presets.js";
 
+// For debugging
+window.Alpine = Alpine;
+
+Alpine.start();
 
 buildGUI();
 activateExportButtons();
-activateAccordions();
 buildPresetSelector();
 
 window.unsavedChanges = false;
