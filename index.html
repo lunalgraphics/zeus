@@ -30,6 +30,7 @@
                                 <tr>
                                     <td>
                                         <label :for="field.key" class="ygui-label" x-text="field.label"
+                                            :title="field.tooltip"
                                             :style="{ color: focusedKey === field.key ? 'deepskyblue' : '' }"
                                         ></label>
                                     </td>
@@ -39,6 +40,7 @@
                                             <select
                                                 :id="field.key"
                                                 class="ygui-input"
+                                                :title="field.tooltip"
                                                 x-model="$store.lightning.options[field.key]"
                                                 @change.throttle.20ms="$store.lightning.render()"
                                                 @change.debounce.20ms="$store.lightning.render()"
@@ -56,6 +58,7 @@
                                                 :id="field.key"
                                                 :type="field.type"
                                                 class="ygui-input"
+                                                :title="field.tooltip"
                                                 x-model="$store.lightning.options[field.key]"
                                                 @input.throttle.20ms="$store.lightning.render()"
                                                 @input.debounce.20ms="$store.lightning.render()"
