@@ -4,19 +4,33 @@ import NumberCircle from "./utils/NumberCircle.js";
 import PixelManipulator from "./utils/PixelManipulator.js";
 
 /**
+ * Seeded PRNG using xorshift32. Fast, deterministic, good distribution.
+ * Returns a function that produces values in [0, 1) on each call.
+ */
+function createRng(seed) {
+    let s = seed | 0;
+    if (s === 0) s = 1; // xorshift can't have state 0
+    return function() {
+        s ^= s << 13;
+        s ^= s >> 17;
+        s ^= s << 5;
+        return (s >>> 0) / 4294967296;
+    };
+}
+
+/**
  * Recursively renders a strand (the main bolt or a branch).
  * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
  * @param {PixelManipulator} manipulator - Shared displacement map pixel reader.
- * @param {object} params - Strand parameters:
- *   startX, startY, length, angle (radians), startRadius, taper (0-100),
- *   twitchAmount, noiseType, numBranches, branchAngle (radians),
- *   branchLenMax (0-100%), branchLenMin (0-100%), depth, options (full options bag)
+ * @param {Function} rng - Seeded random number generator returning [0, 1).
+ * @param {object} params - Strand parameters.
  */
-function renderStrand(ctx, manipulator, params) {
+function renderStrand(ctx, manipulator, rng, params) {
     const {
         startX, startY, length, angle, startRadius,
         taper, twitchAmount, noiseType,
         numBranches, branchAngle, branchLenMax, branchLenMin,
+        branchLenVariance, branchProbability,
         depth, options
     } = params;
 
@@ -50,12 +64,18 @@ function renderStrand(ctx, manipulator, params) {
         let branchSpace = length / (numBranches + 1);
 
         for (let i = 0; i < numBranches; i++) {
+            // Bernoulli: skip this branch with probability (1 - branchProbability)
+            if (rng() > branchProbability) continue;
+
             let flipBranch = (i % 2 == 0) ? 1 : -1;
 
             // Linearly interpolate branch length from max to min across branches
             let t = numBranches > 1 ? i / (numBranches - 1) : 0;
             let branchPct = branchLenMax + (branchLenMin - branchLenMax) * t;
-            let thisBranchLen = length * branchPct / 100;
+
+            // Apply length variance: uniform in [-variance, +variance]
+            let varianceFactor = 1 + (rng() * 2 - 1) * (branchLenVariance / 100);
+            let thisBranchLen = length * branchPct / 100 * varianceFactor;
             if (thisBranchLen <= 0) continue;
 
             // Position along the parent strand
@@ -70,7 +90,7 @@ function renderStrand(ctx, manipulator, params) {
             let progress = distAlongParent / length;
             let childStartRadius = startRadius * (1 - progress * taper / 100);
 
-            renderStrand(ctx, manipulator, {
+            renderStrand(ctx, manipulator, rng, {
                 startX: bStartX,
                 startY: bStartY,
                 length: thisBranchLen,
@@ -83,6 +103,8 @@ function renderStrand(ctx, manipulator, params) {
                 branchAngle,
                 branchLenMax,
                 branchLenMin,
+                branchLenVariance,
+                branchProbability,
                 depth: depth + 1,
                 options
             });
@@ -112,8 +134,11 @@ export default function renderLightning(options, cooled=true) {
 
     let startX = 1000 - options["baseLength"] / 2;
 
+    // Create seeded RNG for stochastic branching
+    let rng = createRng(options["branchSeed"]);
+
     // Render the main strand recursively (depth starts at 0)
-    renderStrand(baseCtx, manipulator, {
+    renderStrand(baseCtx, manipulator, rng, {
         startX: startX,
         startY: 500,
         length: options["baseLength"],
@@ -126,6 +151,8 @@ export default function renderLightning(options, cooled=true) {
         branchAngle: options["branchAngle"] * Math.PI / 180,
         branchLenMax: options["branchLenMax"],
         branchLenMin: options["branchLenMin"],
+        branchLenVariance: options["branchLenVariance"],
+        branchProbability: options["branchProbability"] / 100,
         depth: 0,
         options
     });

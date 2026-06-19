@@ -14,11 +14,14 @@ export const guiSections = {
         { label: "Seed", key: "twitchSeed", type: "number", value: 8, attr: { step: 1 } },
     ],
     Branches: [
-        { label: "Amount", key: "numBranches", type: "number", value: 5, attr: { step: 1 } },
-        { label: "Max Length %", key: "branchLenMax", type: "number", value: 30, attr: { step: 1, min: 0, max: 100 } },
-        { label: "Min Length %", key: "branchLenMin", type: "number", value: 5, attr: { step: 1, min: 0, max: 100 } },
+        { label: "Max Branches", key: "numBranches", type: "number", value: 5, attr: { step: 1 } },
+        { label: "Branch Probability", key: "branchProbability", type: "number", value: 100, attr: { step: 1, min: 0, max: 100 } },
+        { label: "Max Length", key: "branchLenMax", type: "number", value: 30, attr: { step: 1, min: 0, max: 100 } },
+        { label: "Min Length", key: "branchLenMin", type: "number", value: 5, attr: { step: 1, min: 0, max: 100 } },
+        { label: "Length Variance", key: "branchLenVariance", type: "number", value: 5, attr: { step: 1, min: 0, max: 100 } },
         { label: "Angle", key: "branchAngle", type: "number", value: 33, attr: { step: 1, min: 0, max: 360 } },
         { label: "Max Depth", key: "maxDepth", type: "number", value: 1, attr: { step: 1, min: 1, max: 5 } },
+        { label: "Seed", key: "branchSeed", type: "number", value: 1, attr: { step: 1 } },
     ],
     Core: [
         { label: "Size", key: "coreSize", type: "number", value: 7, attr: { step: 1 } },
