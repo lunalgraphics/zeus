@@ -205,7 +205,10 @@ export default function renderLightning(options, cooled=true) {
     if (options["glowNoiseType"] == "Perlin") glowDistortionOpacity /= 3;
     if (glowDistortionOpacity > 100) glowDistortionContrast += glowDistortionOpacity - 100;
     finalCtx.globalCompositeOperation = "overlay";
-    finalCtx.filter = `saturate(0) opacity(${glowDistortionOpacity}%) contrast(${glowDistortionContrast}%)`;
+    finalCtx.filter = `saturate(0)
+        opacity(${glowDistortionOpacity}%)
+        contrast(${glowDistortionContrast}%)
+        ${options["glowNoiseType"] === "Perlin" ? "invert(1)" : ""}`;
     finalCtx.drawImage(glowDistortionMap.canvas, 0, 0);
     finalCtx.restore(); finalCtx.save();
 

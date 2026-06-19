@@ -32,7 +32,7 @@ export const guiSections = {
     Glow: [
         { label: "Depth", key: "glowDepth", type: "number", value: 8, attr: { step: 1, min: 0, max: 20 } },
         { label: "Radius", key: "glowRadius", type: "number", value: 2, attr: { step: 0.1, min: 0 } },
-        { label: "Color", key: "glowColor", type: "color", value: "#0080FF" },
+        { label: "Color", key: "glowColor", type: "color", value: "#6771fe" },
     ],
     "Glow Distortion": [
         { label: "Noise Type", key: "glowNoiseType", type: "select", value: "Fractal", options: ["Perlin", "Fractal"] },
