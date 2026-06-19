@@ -90,7 +90,7 @@ function renderStrand(ctx, manipulator, rng, params) {
             let progress = distAlongParent / length;
             let childStartRadius = startRadius * (1 - progress * taper / 100);
 
-            const shrinkFactor = 0.5;
+            const shrinkFactor = 1 - options["branchShrink"] / 100;
 
             renderStrand(ctx, manipulator, rng, {
                 startX: bStartX,

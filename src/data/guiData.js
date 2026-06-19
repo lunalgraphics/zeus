@@ -21,6 +21,7 @@ export const guiSections = {
         { label: "Length Variance", key: "branchLenVariance", type: "number", value: 10, attr: { step: 1, min: 0, max: 100 } },
         { label: "Angle", key: "branchAngle", type: "number", value: 42, attr: { step: 1, min: 0, max: 360 } },
         { label: "Max Depth", key: "maxDepth", type: "number", value: 3, attr: { step: 1, min: 1, max: 5 } },
+        { label: "Depth Shrink", key: "branchShrink", type: "number", value: 50, attr: { step: 1, min: 0, max: 100 } },
         { label: "Seed", key: "branchSeed", type: "number", value: 1, attr: { step: 1 } },
     ],
     Core: [
