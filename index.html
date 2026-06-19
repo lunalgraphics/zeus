@@ -23,16 +23,18 @@
             </div>
             Preset: <select id="presetselector"></select> <br />
         </center>
-        <div id="options" x-data>
+        <div id="options" x-data="{ focusedKey: null }">
             <template x-for="[sectionName, fields] in Object.entries($store.lightning.sections)" :key="sectionName">
                 <div x-data="{ open: false }">
-                    <b @click="open = !open" x-text="sectionName"></b>
+                    <b @click="open = !open" x-text="sectionName" :style="{ color: open ? 'deepskyblue' : '' }"></b>
                     <div x-show="open" x-collapse>
                         <table style="width: 100%;">
                             <template x-for="field in fields" :key="field.key">
                                 <tr>
                                     <td>
-                                        <label :for="field.key" class="ygui-label" x-text="field.label"></label>
+                                        <label :for="field.key" class="ygui-label" x-text="field.label"
+                                            :style="{ color: focusedKey === field.key ? 'deepskyblue' : '' }"
+                                        ></label>
                                     </td>
                                     <td style="width: 1px;">
                                         <!-- Select fields -->
@@ -43,6 +45,8 @@
                                                 x-model="$store.lightning.options[field.key]"
                                                 @change.throttle.20ms="$store.lightning.render()"
                                                 @change.debounce.20ms="$store.lightning.render()"
+                                                @focus="focusedKey = field.key"
+                                                @blur="if (focusedKey === field.key) focusedKey = null"
                                             >
                                                 <template x-for="opt in field.options" :key="opt">
                                                     <option :value="opt" x-text="opt" :selected="$store.lightning.options[field.key] === opt"></option>
@@ -61,6 +65,8 @@
                                                 :step="field.attr?.step"
                                                 :min="field.attr?.min"
                                                 :max="field.attr?.max"
+                                                @focus="focusedKey = field.key"
+                                                @blur="if (focusedKey === field.key) focusedKey = null"
                                             />
                                         </template>
                                     </td>
