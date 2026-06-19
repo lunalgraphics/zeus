@@ -25,7 +25,7 @@ export const guiSections = {
     ],
     Core: [
         { label: "Size", key: "coreSize", type: "number", value: 5, attr: { step: 1 } },
-        { label: "Softness", key: "softness", type: "number", value: 4, attr: { step: 1, min: 0, max: 29 } },
+        { label: "Softness", key: "softness", type: "number", value: 2, attr: { step: 1, min: 0, max: 29 } },
         { label: "Color", key: "coreColor", type: "color", value: "#FFFFFF" },
     ],
     Glow: [
