@@ -18,7 +18,14 @@
                 <canvas id="glowCanv" width="2000" height="1000" style="width: 100%; display: none;"></canvas>
                 <canvas id="finalCanv" width="2000" height="1000" style="width: 100%;"></canvas>
             </div>
-            Preset: <select id="presetselector"></select> <br />
+            <div x-data="{ pickerOpen: false }" :style="{ display: 'inline-block', position: 'relative', zIndex: 2 }">
+                <button :style="{ position: 'relative', color: pickerOpen ? 'deepskyblue' : '', borderColor: pickerOpen ? 'deepskyblue' : '' }" @click="pickerOpen = !pickerOpen">Select a Preset <span :style="{ marginLeft: '4px', fontSize: 'smaller', }">&#x25BC;</span></button>
+                <div x-show="pickerOpen" :style="{ position: 'absolute', top: 'calc(100% - 7px)', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--bg-color)', width: 'calc(100% - 14px)', border: '1px solid #88888844', borderRadius: '4px' }" @click.outside="pickerOpen = false;">
+                    <template x-for="[presetName, preset] in Object.entries($store.availPresets)" :key="presetName">
+                        <button @click="$store.setPreset(preset); pickerOpen = false;" x-text="presetName" :style="{ width: '100%', margin: 0, border: 0, borderBottom: '1px solid #88888844', borderRadius: 0, }"></button>
+                    </template>
+                </div>
+            </div>
         </center>
         <div id="options" x-data="{ focusedKey: null }">
             <template x-for="[sectionName, fields] in Object.entries($store.lightning.sections)" :key="sectionName">

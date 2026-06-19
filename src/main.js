@@ -3,7 +3,7 @@ import Alpine from "alpinejs";
 import renderLightning from "./renderLightning.js";
 import activateExportButtons from "./ui/activateExportButtons.js";
 import { guiSections, getDefaultOptions } from "./data/guiData.js";
-import { buildPresetSelector } from "./data/presets.js";
+import { availPresets, setPreset } from "./data/presets.js";
 
 if (import.meta.env.DEV) {
     console.log("Welcome, developer.");
@@ -27,10 +27,13 @@ Alpine.store("lightning", {
     },
 });
 
+// Build preset selector
+Alpine.store("availPresets", availPresets);
+Alpine.store("setPreset", setPreset);
+
 Alpine.start();
 
 activateExportButtons();
-buildPresetSelector();
 
 // Initial render
 Alpine.store("lightning").render();

@@ -22,15 +22,3 @@ export let availPresets = {
     "Voldemort": {"baseLength":1111,"taper":76,"noiseType":"Fractal","twitchAmount":414,"twitchScale":50,"twitchOctaves":9,"twitchSeed":9,"numBranches":7,"branchLenMax":200,"branchLenMin":100,"branchLenVariance":15,"branchShrink":50,"branchProbability":10,"branchAngle":-10,"maxDepth":3,"branchSeed":25,"coreSize":8,"softness":4,"coreColor":"#ffffff","glowDepth":6,"glowRadius":4.2,"glowColor":"#80ff00","glowNoiseType":"Fractal","glowTwitchAmount":56,"glowTwitchScale":100,"glowTwitchOctaves":9,"glowTwitchSeed":1},
     "Wavefunction": {"baseLength":1000,"taper":0,"noiseType":"Fractal","twitchAmount":800,"twitchScale":80,"twitchOctaves":2,"twitchSeed":13,"numBranches":0,"branchLenMax":300,"branchLenMin":80,"branchLenVariance":5,"branchShrink":50,"branchProbability":100,"branchAngle":33,"maxDepth":1,"branchSeed":1,"coreSize":5,"softness":2,"coreColor":"#ffffff","glowDepth":8,"glowRadius":2.5,"glowColor":"#ff00f7","glowNoiseType":"Perlin","glowTwitchAmount":0,"glowTwitchScale":80,"glowTwitchOctaves":7,"glowTwitchSeed":1},
 };
-
-export function buildPresetSelector() {
-    for (var presetName in availPresets) {
-        var option = document.createElement("option");
-        option.innerHTML = presetName;
-        option.value = JSON.stringify(availPresets[presetName]);
-        document.querySelector("#presetselector").appendChild(option);
-    }
-    document.querySelector("#presetselector").addEventListener("change", function() {
-        setPreset(JSON.parse(this.value));
-    });
-}
