@@ -1,3 +1,5 @@
+import ygui from "./ygui.js";
+
 export default function buildGUI() {
     ygui.buildGUIsection([
         {
