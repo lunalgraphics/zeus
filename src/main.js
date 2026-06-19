@@ -28,6 +28,7 @@ function renderFromInputs() {
     }
     renderLightning(options);
 }
+renderFromInputs();
 
 for (var inputElem of document.querySelectorAll("#options input, #options select")) {
     inputElem.addEventListener("input", () => {
