@@ -10,7 +10,7 @@ export function setPreset(presetData) {
     for (const key in presetData) {
         store.options[key] = presetData[key];
     }
-    store.unsavedChanges = true;
+    store.render();
 }
 
 export let availPresets = {

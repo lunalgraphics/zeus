@@ -41,7 +41,7 @@
                                                 :id="field.key"
                                                 class="ygui-input"
                                                 x-model="$store.lightning.options[field.key]"
-                                                @change="$store.lightning.markDirty()"
+                                                @change.throttle.20ms="$store.lightning.render()"
                                             >
                                                 <template x-for="opt in field.options" :key="opt">
                                                     <option :value="opt" x-text="opt"></option>
@@ -55,7 +55,7 @@
                                                 :type="field.type"
                                                 class="ygui-input"
                                                 x-model="$store.lightning.options[field.key]"
-                                                @input="$store.lightning.markDirty()"
+                                                @input.throttle.20ms="$store.lightning.render()"
                                                 :step="field.attr?.step"
                                                 :min="field.attr?.min"
                                                 :max="field.attr?.max"
