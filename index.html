@@ -20,7 +20,8 @@
             </div>
             <div x-data="{ pickerOpen: false }" :style="{ display: 'inline-block', position: 'relative', zIndex: 2 }">
                 <button :style="{ position: 'relative', color: pickerOpen ? 'deepskyblue' : '', borderColor: pickerOpen ? 'deepskyblue' : '' }" @click="pickerOpen = !pickerOpen">Select a Preset <span :style="{ marginLeft: '4px', fontSize: 'smaller', }">&#x25BC;</span></button>
-                <div x-show="pickerOpen" :style="{ position: 'absolute', top: 'calc(100% - 7px)', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--bg-color)', width: 'calc(100% - 14px)', border: '1px solid #88888844', borderRadius: '4px' }" @click.outside="pickerOpen = false;">
+                <div x-show="pickerOpen" :style="{ position: 'absolute', top: 'calc(100% - 7px)', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--bg-color)', width: 'calc(100% - 16px)', border: '1px solid #88888844', borderRadius: '4px', overflow: 'hidden', }"
+                    @click.outside="pickerOpen = false;">
                     <template x-for="[presetName, preset] in Object.entries($store.availPresets)" :key="presetName">
                         <button @click="$store.setPreset(preset); pickerOpen = false;" x-text="presetName" :style="{ width: '100%', margin: 0, border: 0, borderBottom: '1px solid #88888844', borderRadius: 0, }"></button>
                     </template>
