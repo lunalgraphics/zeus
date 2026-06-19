@@ -23,31 +23,51 @@
             </div>
             Preset: <select id="presetselector"></select> <br />
         </center>
-        <div id="options">
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Dimensions</b>
-              <div x-show="open" x-collapse id="Dimensions"></div>
-            </div>
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Twitch</b>
-              <div x-show="open" x-collapse id="Twitch"></div>
-            </div>
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Branches</b>
-              <div x-show="open" x-collapse id="Branches"></div>
-            </div>
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Core</b>
-              <div x-show="open" x-collapse id="Core"></div>
-            </div>
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Glow</b>
-              <div x-show="open" x-collapse id="Glow"></div>
-            </div>
-            <div x-data="{ open: false }">
-              <b @click="open = !open">Glow Distortion</b>
-              <div x-show="open" x-collapse id="Glow_Distortion"></div>
-            </div>
+        <div id="options" x-data>
+            <template x-for="[sectionName, fields] in Object.entries($store.lightning.sections)" :key="sectionName">
+                <div x-data="{ open: false }">
+                    <b @click="open = !open" x-text="sectionName"></b>
+                    <div x-show="open" x-collapse>
+                        <table style="width: 100%;">
+                            <template x-for="field in fields" :key="field.key">
+                                <tr>
+                                    <td>
+                                        <label :for="field.key" class="ygui-label" x-text="field.label"></label>
+                                    </td>
+                                    <td style="width: 1px;">
+                                        <!-- Select fields -->
+                                        <template x-if="field.type === 'select'">
+                                            <select
+                                                :id="field.key"
+                                                class="ygui-input"
+                                                x-model="$store.lightning.options[field.key]"
+                                                @change="$store.lightning.markDirty()"
+                                            >
+                                                <template x-for="opt in field.options" :key="opt">
+                                                    <option :value="opt" x-text="opt"></option>
+                                                </template>
+                                            </select>
+                                        </template>
+                                        <!-- Input fields (number, color, etc.) -->
+                                        <template x-if="field.type !== 'select'">
+                                            <input
+                                                :id="field.key"
+                                                :type="field.type"
+                                                class="ygui-input"
+                                                x-model="$store.lightning.options[field.key]"
+                                                @input="$store.lightning.markDirty()"
+                                                :step="field.attr?.step"
+                                                :min="field.attr?.min"
+                                                :max="field.attr?.max"
+                                            />
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                        </table>
+                    </div>
+                </div>
+            </template>
         </div>
         
         <script type="module" src="./src/main.js"></script>

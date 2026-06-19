@@ -1,58 +1,57 @@
 import Alpine from "alpinejs";
 
 import renderLightning from "./renderLightning.js";
-
-import buildGUI from "./ui/buildGUI.js";
 import activateExportButtons from "./ui/activateExportButtons.js";
-
-import { buildPresetSelector } from "./data/presets.js";
+import { guiSections, getDefaultOptions } from "./data/guiData.js";
+import { availPresets, buildPresetSelector } from "./data/presets.js";
 
 if (import.meta.env.DEV) {
     console.log("Welcome, developer.");
     window.Alpine = Alpine;
 }
 
+// Register an Alpine store that holds all lightning options.
+Alpine.store("lightning", {
+    options: getDefaultOptions(),
+    sections: guiSections,
+    unsavedChanges: false,
+
+    // Called by x-model setters via $watch or x-effect
+    markDirty() {
+        this.unsavedChanges = true;
+    },
+
+    // Build a numeric-coerced copy of options for the renderer
+    getNumericOptions() {
+        const out = {};
+        for (const [key, val] of Object.entries(this.options)) {
+            out[key] = isNaN(val) ? val : parseFloat(val);
+        }
+        return out;
+    },
+});
+
 Alpine.start();
 
-buildGUI();
 activateExportButtons();
 buildPresetSelector();
 
-window.unsavedChanges = false;
-
-function renderFromInputs() {
-    var options = {};
-    for (var inputElem of document.querySelectorAll("#options input, #options select")) {
-        options[inputElem.id] = inputElem.value;
-        if (!isNaN(inputElem.value)) options[inputElem.id] = parseFloat(inputElem.value);
-    }
-    renderLightning(options);
-}
-renderFromInputs();
-
-for (var inputElem of document.querySelectorAll("#options input, #options select")) {
-    inputElem.addEventListener("input", () => {
-        window.unsavedChanges = true;
-    });
-
-    inputElem.addEventListener("focus", function(e) {
-        document.querySelector(`label[for=${this.id}]`).style.color = "deepskyblue";
-    });
-    inputElem.addEventListener("blur", function(e) {
-        document.querySelector(`label[for=${this.id}]`).style.color = "";
-    });
-}
-
+// Render loop — checks the store for dirty flag
 let tick = () => {
-    if (window.unsavedChanges) {
+    const store = Alpine.store("lightning");
+    if (store.unsavedChanges) {
         try {
-            renderFromInputs();
-        }
-        catch(err) {
+            renderLightning(store.getNumericOptions());
+        } catch (err) {
             console.log(err);
         }
-        window.unsavedChanges = false;
+        store.unsavedChanges = false;
     }
     setTimeout(tick, 20);
 };
+
+// Initial render
+const store = Alpine.store("lightning");
+renderLightning(store.getNumericOptions());
+
 tick();

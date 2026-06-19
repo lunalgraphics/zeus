@@ -1,17 +1,16 @@
+import Alpine from "alpinejs";
+
 export function getPreset() {
-    var presetData = {};
-    for (var inputElem of document.querySelectorAll("#options input, #options select")) {
-        presetData[inputElem.id] = inputElem.value;
-        if (!isNaN(inputElem.value)) presetData[inputElem.id] = parseFloat(inputElem.value);
-    }
-    return presetData;
+    const store = Alpine.store("lightning");
+    return store.getNumericOptions();
 }
 
 export function setPreset(presetData) {
-    for (var key in presetData) {
-        document.getElementById(key).value = presetData[key];
+    const store = Alpine.store("lightning");
+    for (const key in presetData) {
+        store.options[key] = presetData[key];
     }
-    window.unsavedChanges = true;
+    store.unsavedChanges = true;
 }
 
 export let availPresets = {
