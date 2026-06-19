@@ -71,11 +71,11 @@ function renderStrand(ctx, manipulator, rng, params) {
 
             // Linearly interpolate branch length from max to min across branches
             let t = numBranches > 1 ? i / (numBranches - 1) : 0;
-            let branchPct = branchLenMax + (branchLenMin - branchLenMax) * t;
+            let thisBranchLen = branchLenMax + (branchLenMin - branchLenMax) * t;
 
             // Apply length variance: uniform in [-variance, +variance]
             let varianceFactor = 1 + (rng() * 2 - 1) * (branchLenVariance / 100);
-            let thisBranchLen = length * branchPct / 100 * varianceFactor;
+            thisBranchLen *= varianceFactor;
             if (thisBranchLen <= 0) continue;
 
             // Position along the parent strand
@@ -90,6 +90,8 @@ function renderStrand(ctx, manipulator, rng, params) {
             let progress = distAlongParent / length;
             let childStartRadius = startRadius * (1 - progress * taper / 100);
 
+            const shrinkFactor = 0.6;
+
             renderStrand(ctx, manipulator, rng, {
                 startX: bStartX,
                 startY: bStartY,
@@ -101,8 +103,8 @@ function renderStrand(ctx, manipulator, rng, params) {
                 noiseType,
                 numBranches,
                 branchAngle,
-                branchLenMax,
-                branchLenMin,
+                branchLenMax: branchLenMax * shrinkFactor,
+                branchLenMin: branchLenMin * shrinkFactor,
                 branchLenVariance,
                 branchProbability,
                 depth: depth + 1,

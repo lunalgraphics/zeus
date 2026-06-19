@@ -101,6 +101,8 @@ export default class FractalNoise {
         // Apply the persistent SVG filter by reference
         ctx.filter = "url(#" + this._filterId + ")";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.filter = "url(#" + this._filterId + ") opacity(0.77)";
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.filter = "none";
     }
 
