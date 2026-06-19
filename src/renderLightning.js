@@ -119,7 +119,7 @@ export default function renderLightning(options, cooled=true) {
     let displacementMapCanv = document.getElementById("displacementMapCanv");
     let displacementMapCtx = displacementMapCanv.getContext("2d");
     let displacementMap = new FractalNoise(2000, 1000, {
-        baseFrequency: [options["twitchScale"], options["twitchScale"]],
+        baseFrequency: [options["twitchScale"] / 10000, options["twitchScale"] / 10000],
         type: (options["noiseType"] == "Fractal")?"fractalNoise":"turbulence",
         numOctaves: options["twitchOctaves"],
         seed: options["twitchSeed"],
@@ -193,7 +193,7 @@ export default function renderLightning(options, cooled=true) {
     finalCtx.restore(); finalCtx.save();
 
     let glowDistortionMap = new FractalNoise(2000, 1000, {
-        baseFrequency: [options["glowTwitchScale"], options["glowTwitchScale"]],
+        baseFrequency: [options["glowTwitchScale"] / 10000, options["glowTwitchScale"] / 10000],
         type: (options["glowNoiseType"] == "Fractal")?"fractalNoise":"turbulence",
         numOctaves: options["glowTwitchOctaves"],
         seed: options["glowTwitchSeed"],

@@ -9,7 +9,7 @@ export const guiSections = {
     Twitch: [
         { label: "Noise Type", key: "noiseType", type: "select", value: "Fractal", options: ["Perlin", "Fractal"] },
         { label: "Amount", key: "twitchAmount", type: "number", value: 400, attr: { step: 1 } },
-        { label: "Scale", key: "twitchScale", type: "number", value: 0.005, attr: { step: 0.001 } },
+        { label: "Scale", key: "twitchScale", type: "number", value: 50, attr: { step: 5, min: 0 } },
         { label: "Complexity", key: "twitchOctaves", type: "number", value: 5, attr: { step: 1, min: 1, max: 9 } },
         { label: "Seed", key: "twitchSeed", type: "number", value: 8, attr: { step: 1 } },
     ],
@@ -37,7 +37,7 @@ export const guiSections = {
     "Glow Distortion": [
         { label: "Noise Type", key: "glowNoiseType", type: "select", value: "Fractal", options: ["Perlin", "Fractal"] },
         { label: "Amount", key: "glowTwitchAmount", type: "number", value: 0, attr: { step: 1 } },
-        { label: "Scale", key: "glowTwitchScale", type: "number", value: 0.008, attr: { step: 0.001 } },
+        { label: "Scale", key: "glowTwitchScale", type: "number", value: 80, attr: { step: 5, min: 0 } },
         { label: "Complexity", key: "glowTwitchOctaves", type: "number", value: 7, attr: { step: 1, min: 1, max: 9 } },
         { label: "Seed", key: "glowTwitchSeed", type: "number", value: 1, attr: { step: 1 } },
     ],
