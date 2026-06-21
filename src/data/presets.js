@@ -2,7 +2,7 @@ import Alpine from "alpinejs";
 
 export function getPreset() {
     const store = Alpine.store("lightning");
-    return store.getNumericOptions();
+    return JSON.stringify(store.options);
 }
 
 export function setPreset(presetData) {

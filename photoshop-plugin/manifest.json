@@ -1,0 +1,59 @@
+{
+    "manifestVersion": 5,
+    "id": "com.lunalgraphics.zeus",
+    "name": "Zeus",
+    "version": "1.0.0",
+    "main": "index.html",
+    "description": "Powerful lightning and electricity effects",
+    "author": "Yikuan Sun",
+    "host": {
+        "app": "PS",
+        "minVersion": "23.3.0"
+    },
+    "entrypoints": [
+        {
+            "type": "panel",
+            "id": "panel",
+            "label": "Zeus",
+            "minimumSize": {
+                "width": 240,
+                "height": 240
+            },
+            "maximumSize": {
+                "width": 1280,
+                "height": 720
+            },
+            "preferredDockedSize": { "width": 320, "height": 480 },
+            "preferredFloatingSize": { "width": 320, "height": 480 },
+            "icons": [
+                {
+                    "width": 28,
+                    "height": 28,
+                    "path": "icons/icon.png",
+                    "scale": [1, 2, 4],
+                    "theme": ["darkest", "dark", "medium", "light", "lightest"]
+                }
+            ]
+        }
+    ],
+    "icons": [
+        {
+            "width": 28,
+            "height": 28,
+            "path": "icons/icon.png",
+            "scale": [1, 2, 4],
+            "theme": ["darkest", "dark", "medium", "light", "lightest"]
+        }
+    ],
+    "requiredPermissions": {
+        "webview": {
+            "allow": "yes",
+            "domains": ["https://yikuansun.github.io", "https://*.adobe.com"],
+            "allowLocalRendering": "yes",
+            "enableMessageBridge": "localAndRemote"
+        },
+        "launchProcess": {
+            "schemes": ["http", "https"]
+        }
+    }
+}
