@@ -99,10 +99,25 @@ export default class FractalNoise {
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Apply the persistent SVG filter by reference
-        ctx.filter = "url(#" + this._filterId + ")";
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        ctx.filter = "url(#" + this._filterId + ") opacity(0.77)";
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        if (this.options.type === "fractalNoise") {
+            ctx.filter = "url(#" + this._filterId + ")";
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.filter = "url(#" + this._filterId + ") opacity(0.77)";
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+        else {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillStyle = "black";
+            ctx.filter = `url(#${this._filterId}) invert()`;
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.filter = "none";
+            ctx.globalCompositeOperation = "overlay";
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillStyle = "#515151";
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
         ctx.filter = "none";
     }
 
