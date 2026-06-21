@@ -18,13 +18,35 @@ function createRng(seed) {
 }
 
 /**
- * Recursively renders a strand (the main bolt or a branch).
- * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
- * @param {PixelManipulator} manipulator - Shared displacement map pixel reader.
- * @param {Function} rng - Seeded random number generator returning [0, 1).
- * @param {object} params - Strand parameters.
+ * Checks if two line segments (p1-p2) and (p3-p4) intersect.
  */
-function renderStrand(ctx, manipulator, rng, params) {
+function segmentsIntersect(p1, p2, p3, p4) {
+    let d1x = p2.x - p1.x, d1y = p2.y - p1.y;
+    let d2x = p4.x - p3.x, d2y = p4.y - p3.y;
+    let cross = d1x * d2y - d1y * d2x;
+    if (Math.abs(cross) < 1e-10) return false;
+    let dx = p3.x - p1.x, dy = p3.y - p1.y;
+    let t = (dx * d2y - dy * d2x) / cross;
+    let u = (dx * d1y - dy * d1x) / cross;
+    return t > 0 && t < 1 && u > 0 && u < 1;
+}
+
+/**
+ * Checks if a line segment crosses any existing segment in the list.
+ */
+function segmentCrossesExisting(segStart, segEnd, existingSegments) {
+    for (let seg of existingSegments) {
+        if (segmentsIntersect(segStart, segEnd, seg.start, seg.end)) return true;
+    }
+    return false;
+}
+
+/**
+ * Recursively builds the lightning tree using pre-displaced (straight) segments.
+ * Each strand is stored as a segment {start, end} for crossing checks,
+ * plus the full params needed to render it later with displacement.
+ */
+function buildTree(manipulator, rng, allSegments, strandParams, params) {
     const {
         startX, startY, length, angle, startRadius,
         taper, twitchAmount, noiseType,
@@ -33,69 +55,54 @@ function renderStrand(ctx, manipulator, rng, params) {
         depth, options
     } = params;
 
-    let adjustedTwitch = twitchAmount;
-    if (noiseType == "Perlin") adjustedTwitch /= 3;
+    // This strand's pre-displaced segment (straight line)
+    let segStart = { x: startX, y: startY };
+    let segEnd = { x: startX + length * Math.cos(angle), y: startY + length * Math.sin(angle) };
+    allSegments.push({ start: segStart, end: segEnd });
 
-    ctx.fillStyle = "white";
-
-    // Draw the strand itself
-    for (let dist = 0; dist <= length; dist += 1) {
-        let x = startX + dist * Math.cos(angle);
-        let y = startY + dist * Math.sin(angle);
-        let displacedX = x;
-        let displacedY = y;
-
-        let [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(y));
-        let luma = (r + g + b) / (3 * 255);
-        let deltaPos = (luma - 0.5) * adjustedTwitch;
-        displacedY += Math.round(deltaPos);
-
-        let progress = dist / length;
-        let radius = startRadius * (1 - progress * taper / 100);
-
-        ctx.beginPath();
-        ctx.arc(displacedX, displacedY, radius, 0, 2 * Math.PI);
-        ctx.fill();
-    }
+    // Store params for rendering later
+    strandParams.push(params);
 
     // Spawn branches if we haven't hit max depth
     if (depth < options["maxDepth"] && maxBranches > 0) {
-        // Max branches decreases linearly with depth, reaching 0 at maxDepth
         let depthFraction = depth / options["maxDepth"];
         let maxAtThisDepth = Math.round(maxBranches * (1 - depthFraction));
-
-        // Discrete uniform: sample from [0, maxAtThisDepth]
         let numBranches = Math.floor(rng() * (maxAtThisDepth + 1));
+
         if (numBranches > 0) {
             let branchSpace = length / (numBranches + 1);
 
             for (let i = 0; i < numBranches; i++) {
                 let flipBranch = (i % 2 == 0) ? 1 : -1;
 
-                // Linearly interpolate branch length from max to min across branches
                 let t = numBranches > 1 ? i / (numBranches - 1) : 0;
                 let thisBranchLen = branchLenMax + (branchLenMin - branchLenMax) * t;
 
-                // Apply length variance: uniform in [-variance, +variance]
                 let varianceFactor = 1 + (rng() * 2 - 1) * (branchLenVariance / 100);
                 thisBranchLen *= varianceFactor;
                 if (thisBranchLen <= 0) continue;
 
-                // Position along the parent strand
                 let distAlongParent = (i + 1) * branchSpace;
                 let bStartX = startX + distAlongParent * Math.cos(angle);
                 let bStartY = startY + distAlongParent * Math.sin(angle);
 
-                // Branch angle relative to parent
                 let childAngle = angle + branchAngle * flipBranch;
 
-                // Radius at branch start matches parent's radius at that point
                 let progress = distAlongParent / length;
                 let childStartRadius = startRadius * (1 - progress * taper / 100);
 
                 const shrinkFactor = 1 - options["branchShrink"] / 100;
 
-                renderStrand(ctx, manipulator, rng, {
+                // Check if this branch's straight segment crosses any existing one
+                let childEnd = {
+                    x: bStartX + thisBranchLen * Math.cos(childAngle),
+                    y: bStartY + thisBranchLen * Math.sin(childAngle)
+                };
+                if (segmentCrossesExisting({ x: bStartX, y: bStartY }, childEnd, allSegments)) {
+                    continue;
+                }
+
+                buildTree(manipulator, rng, allSegments, strandParams, {
                     startX: bStartX,
                     startY: bStartY,
                     length: thisBranchLen,
@@ -114,6 +121,34 @@ function renderStrand(ctx, manipulator, rng, params) {
                 });
             }
         }
+    }
+}
+
+/**
+ * Renders a strand with displacement applied.
+ */
+function renderStrand(ctx, manipulator, params) {
+    const { startX, startY, length, angle, startRadius, taper, twitchAmount, noiseType } = params;
+
+    let adjustedTwitch = twitchAmount;
+    if (noiseType == "Perlin") adjustedTwitch /= 3;
+
+    ctx.fillStyle = "white";
+    for (let dist = 0; dist <= length; dist += 1) {
+        let x = startX + dist * Math.cos(angle);
+        let y = startY + dist * Math.sin(angle);
+
+        let [r, g, b] = manipulator.getPixel(Math.round(x), Math.round(y));
+        let luma = (r + g + b) / (3 * 255);
+        let deltaPos = (luma - 0.5) * adjustedTwitch;
+        let displacedY = y + Math.round(deltaPos);
+
+        let progress = dist / length;
+        let radius = startRadius * (1 - progress * taper / 100);
+
+        ctx.beginPath();
+        ctx.arc(x, displacedY, radius, 0, 2 * Math.PI);
+        ctx.fill();
     }
 }
 
@@ -142,12 +177,14 @@ export default function renderLightning(options, cooled=true) {
     // Create seeded RNG for stochastic branching
     let rng = createRng(options["branchSeed"]);
 
-    // Render the main strand recursively (depth starts at 0)
-    renderStrand(baseCtx, manipulator, rng, {
+    // Build the lightning tree (straight segments, prune crossings)
+    let allSegments = [];
+    let strandParams = [];
+    buildTree(manipulator, rng, allSegments, strandParams, {
         startX: startX,
         startY: 500,
         length: options["baseLength"],
-        angle: 0,  // main bolt goes horizontal
+        angle: 0,
         startRadius: options["coreSize"],
         taper: options["taper"],
         twitchAmount: options["twitchAmount"],
@@ -160,6 +197,11 @@ export default function renderLightning(options, cooled=true) {
         depth: 0,
         options
     });
+
+    // Render all surviving strands with displacement
+    for (let params of strandParams) {
+        renderStrand(baseCtx, manipulator, params);
+    }
 
     let glowCanv = document.getElementById("glowCanv");
     let glowCtx = glowCanv.getContext("2d");

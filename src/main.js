@@ -27,6 +27,8 @@ Alpine.store("lightning", {
     },
 });
 
+setPreset(availPresets["Strike"]);
+
 // Build preset selector
 Alpine.store("availPresets", availPresets);
 Alpine.store("setPreset", setPreset);
