@@ -1,4 +1,5 @@
 import Photopea from "photopea";
+import { getPreset } from "../data/presets.js";
 const { VITE_BUILD_MODE } = import.meta.env;
 
 export default function activateExportButtons() {
@@ -20,6 +21,27 @@ export default function activateExportButtons() {
                 desc1.putReference(cTID('null'), ref1);
                 executeAction(cTID('slct'), desc1, DialogModes.NO);
             `);
+        });
+    }
+    else if (VITE_BUILD_MODE === "photoshop") {
+        document.querySelector("#exportPNG").innerText = "Add to Document";
+        document.querySelector("#exportPNG").addEventListener("click", async () => {
+            // Encode raw RGBA pixels as base64 — avoids PNG encoding/decoding
+            // and doesn't rely on UXP canvas support.
+            // Chunked String.fromCharCode prevents stack overflow on large images.
+            let finalCanv = document.getElementById("finalCanv");
+            let imageData = finalCanv.getContext("2d").getImageData(0, 0, glowCanv.width, glowCanv.height);
+            let bytes = new Uint8Array(imageData.data.buffer);
+            let binary = "";
+            const CHUNK = 8192;
+            for (let i = 0; i < bytes.length; i += CHUNK) {
+                binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+            }
+            window.uxpHost.postMessage({
+                type: "exportLayer",
+                data: btoa(binary),
+                metadata: getPreset(),
+            });
         });
     }
     else {
