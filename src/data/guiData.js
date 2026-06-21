@@ -9,7 +9,7 @@ export const guiSections = {
     Twitch: [
         { label: "Noise Type", key: "noiseType", type: "select", value: "Fractal", options: ["Perlin", "Fractal"], tooltip: "Type of noise used for displacement (Perlin is smoother, Fractal is more erratic)" },
         { label: "Amount", key: "twitchAmount", type: "number", value: 400, attr: { step: 1 }, tooltip: "Strength of the vertical displacement applied to the bolt" },
-        { label: "Scale", key: "twitchScale", type: "number", value: 50, attr: { step: 1, min: 0 }, tooltip: "Frequency of the noise pattern (higher = more detail, lower = broader waves)" },
+        { label: "Scale", key: "twitchScale", type: "number", value: 50, attr: { step: 5, min: 0 }, tooltip: "Frequency of the noise pattern (higher = more detail, lower = broader waves)" },
         { label: "Complexity", key: "twitchOctaves", type: "number", value: 5, attr: { step: 1, min: 1, max: 9 }, tooltip: "Number of noise octaves layered together (more = finer detail)" },
         { label: "Seed", key: "twitchSeed", type: "number", value: 8, attr: { step: 1 }, tooltip: "Random seed for the displacement noise (same seed = same shape)" },
     ],
@@ -36,7 +36,7 @@ export const guiSections = {
     "Glow Distortion": [
         { label: "Noise Type", key: "glowNoiseType", type: "select", value: "Fractal", options: ["Perlin", "Fractal"], tooltip: "Type of noise used to distort the glow" },
         { label: "Amount", key: "glowTwitchAmount", type: "number", value: 0, attr: { step: 1 }, tooltip: "Strength of noise distortion overlaid on the glow" },
-        { label: "Scale", key: "glowTwitchScale", type: "number", value: 80, attr: { step: 1, min: 0 }, tooltip: "Frequency of the glow distortion noise" },
+        { label: "Scale", key: "glowTwitchScale", type: "number", value: 80, attr: { step: 5, min: 0 }, tooltip: "Frequency of the glow distortion noise" },
         { label: "Complexity", key: "glowTwitchOctaves", type: "number", value: 7, attr: { step: 1, min: 1, max: 9 }, tooltip: "Number of noise octaves for glow distortion" },
         { label: "Seed", key: "glowTwitchSeed", type: "number", value: 1, attr: { step: 1 }, tooltip: "Random seed for the glow distortion noise" },
     ],
