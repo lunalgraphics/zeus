@@ -45,7 +45,8 @@ input, select {
     font-family: var(--text-font);
     background-color: var(--bg-color);
     color: aliceblue;
-    width: 69px;
+    width: 54px;
+    box-sizing: border-box;
     border: 1px solid aliceblue;
     border-radius: 2px;
     transition: 0.2s;
