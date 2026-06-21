@@ -4,17 +4,16 @@ import NumberCircle from "./utils/NumberCircle.js";
 import PixelManipulator from "./utils/PixelManipulator.js";
 
 /**
- * Seeded PRNG using xorshift32. Fast, deterministic, good distribution.
+ * Seeded PRNG using mulberry32. Well-distributed even for small seeds.
  * Returns a function that produces values in [0, 1) on each call.
  */
 function createRng(seed) {
     let s = seed | 0;
-    if (s === 0) s = 1; // xorshift can't have state 0
     return function() {
-        s ^= s << 13;
-        s ^= s >> 17;
-        s ^= s << 5;
-        return (s >>> 0) / 4294967296;
+        s |= 0; s = s + 0x6D2B79F5 | 0;
+        let t = Math.imul(s ^ s >>> 15, 1 | s);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
 }
 
@@ -29,8 +28,8 @@ function renderStrand(ctx, manipulator, rng, params) {
     const {
         startX, startY, length, angle, startRadius,
         taper, twitchAmount, noiseType,
-        numBranches, branchAngle, branchLenMax, branchLenMin,
-        branchLenVariance, branchProbability,
+        maxBranches, branchAngle, branchLenMax, branchLenMin,
+        branchLenVariance,
         depth, options
     } = params;
 
@@ -60,56 +59,60 @@ function renderStrand(ctx, manipulator, rng, params) {
     }
 
     // Spawn branches if we haven't hit max depth
-    if (depth < options["maxDepth"]) {
-        let branchSpace = length / (numBranches + 1);
+    if (depth < options["maxDepth"] && maxBranches > 0) {
+        // Max branches decreases linearly with depth, reaching 0 at maxDepth
+        let depthFraction = depth / options["maxDepth"];
+        let maxAtThisDepth = Math.round(maxBranches * (1 - depthFraction));
 
-        for (let i = 0; i < numBranches; i++) {
-            // Bernoulli: skip this branch with probability (1 - branchProbability)
-            if (rng() > branchProbability) continue;
+        // Discrete uniform: sample from [0, maxAtThisDepth]
+        let numBranches = Math.floor(rng() * (maxAtThisDepth + 1));
+        if (numBranches > 0) {
+            let branchSpace = length / (numBranches + 1);
 
-            let flipBranch = (i % 2 == 0) ? 1 : -1;
+            for (let i = 0; i < numBranches; i++) {
+                let flipBranch = (i % 2 == 0) ? 1 : -1;
 
-            // Linearly interpolate branch length from max to min across branches
-            let t = numBranches > 1 ? i / (numBranches - 1) : 0;
-            let thisBranchLen = branchLenMax + (branchLenMin - branchLenMax) * t;
+                // Linearly interpolate branch length from max to min across branches
+                let t = numBranches > 1 ? i / (numBranches - 1) : 0;
+                let thisBranchLen = branchLenMax + (branchLenMin - branchLenMax) * t;
 
-            // Apply length variance: uniform in [-variance, +variance]
-            let varianceFactor = 1 + (rng() * 2 - 1) * (branchLenVariance / 100);
-            thisBranchLen *= varianceFactor;
-            if (thisBranchLen <= 0) continue;
+                // Apply length variance: uniform in [-variance, +variance]
+                let varianceFactor = 1 + (rng() * 2 - 1) * (branchLenVariance / 100);
+                thisBranchLen *= varianceFactor;
+                if (thisBranchLen <= 0) continue;
 
-            // Position along the parent strand
-            let distAlongParent = (i + 1) * branchSpace;
-            let bStartX = startX + distAlongParent * Math.cos(angle);
-            let bStartY = startY + distAlongParent * Math.sin(angle);
+                // Position along the parent strand
+                let distAlongParent = (i + 1) * branchSpace;
+                let bStartX = startX + distAlongParent * Math.cos(angle);
+                let bStartY = startY + distAlongParent * Math.sin(angle);
 
-            // Branch angle relative to parent
-            let childAngle = angle + branchAngle * flipBranch;
+                // Branch angle relative to parent
+                let childAngle = angle + branchAngle * flipBranch;
 
-            // Radius at branch start matches parent's radius at that point
-            let progress = distAlongParent / length;
-            let childStartRadius = startRadius * (1 - progress * taper / 100);
+                // Radius at branch start matches parent's radius at that point
+                let progress = distAlongParent / length;
+                let childStartRadius = startRadius * (1 - progress * taper / 100);
 
-            const shrinkFactor = 1 - options["branchShrink"] / 100;
+                const shrinkFactor = 1 - options["branchShrink"] / 100;
 
-            renderStrand(ctx, manipulator, rng, {
-                startX: bStartX,
-                startY: bStartY,
-                length: thisBranchLen,
-                angle: childAngle,
-                startRadius: childStartRadius,
-                taper,
-                twitchAmount,
-                noiseType,
-                numBranches,
-                branchAngle,
-                branchLenMax: branchLenMax * shrinkFactor,
-                branchLenMin: branchLenMin * shrinkFactor,
-                branchLenVariance,
-                branchProbability,
-                depth: depth + 1,
-                options
-            });
+                renderStrand(ctx, manipulator, rng, {
+                    startX: bStartX,
+                    startY: bStartY,
+                    length: thisBranchLen,
+                    angle: childAngle,
+                    startRadius: childStartRadius,
+                    taper,
+                    twitchAmount,
+                    noiseType,
+                    maxBranches,
+                    branchAngle,
+                    branchLenMax: branchLenMax * shrinkFactor,
+                    branchLenMin: branchLenMin * shrinkFactor,
+                    branchLenVariance,
+                    depth: depth + 1,
+                    options
+                });
+            }
         }
     }
 }
@@ -149,12 +152,11 @@ export default function renderLightning(options, cooled=true) {
         taper: options["taper"],
         twitchAmount: options["twitchAmount"],
         noiseType: options["noiseType"],
-        numBranches: options["numBranches"],
+        maxBranches: options["maxBranches"],
         branchAngle: options["branchAngle"] * Math.PI / 180,
         branchLenMax: options["branchLenMax"],
         branchLenMin: options["branchLenMin"],
         branchLenVariance: options["branchLenVariance"],
-        branchProbability: options["branchProbability"] / 100,
         depth: 0,
         options
     });
