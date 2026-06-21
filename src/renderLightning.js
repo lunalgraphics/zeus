@@ -125,7 +125,8 @@ function buildTree(manipulator, rng, allSegments, strandParams, params) {
 }
 
 /**
- * Renders a strand with displacement applied.
+ * Renders a strand with displacement applied, drawing connected line segments
+ * with round caps between consecutive displaced points.
  */
 function renderStrand(ctx, manipulator, params) {
     const { startX, startY, length, angle, startRadius, taper, twitchAmount, noiseType } = params;
@@ -133,7 +134,12 @@ function renderStrand(ctx, manipulator, params) {
     let adjustedTwitch = twitchAmount;
     if (noiseType == "Perlin") adjustedTwitch /= 3;
 
+    ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
+    ctx.lineCap = "round";
+
+    let prevX = null, prevY = null, prevRadius = 0;
+
     for (let dist = 0; dist <= length; dist += 1) {
         let x = startX + dist * Math.cos(angle);
         let y = startY + dist * Math.sin(angle);
@@ -146,9 +152,23 @@ function renderStrand(ctx, manipulator, params) {
         let progress = dist / length;
         let radius = startRadius * (1 - progress * taper / 100);
 
-        ctx.beginPath();
-        ctx.arc(x, displacedY, radius, 0, 2 * Math.PI);
-        ctx.fill();
+        if (prevX !== null) {
+            let lineWidth = Math.min(prevRadius, radius) * 2;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(x, displacedY);
+            ctx.stroke();
+        } else {
+            // Draw the first point as a circle
+            ctx.beginPath();
+            ctx.arc(x, displacedY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        prevX = x;
+        prevY = displacedY;
+        prevRadius = radius;
     }
 }
 
