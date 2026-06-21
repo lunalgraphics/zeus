@@ -9,6 +9,9 @@ export default defineConfig(({ mode }) => {
     if (env.VITE_BUILD_MODE === 'photoshop') {
         buildDir = 'photoshop-plugin/webview-contents';
     }
+    else if (env.VITE_BUILD_MODE === 'photopea') {
+        buildDir = 'photopea-plugin';
+    }
 
     return {
         build: {
