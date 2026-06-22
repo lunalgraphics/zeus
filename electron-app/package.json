@@ -8,7 +8,7 @@
         "email": "lunalgraphics@gmail.com"
     },
     "homepage": "https://lunalgraphics.com/about-zeus",
-    "version": "1.0.0",
+    "version": "5.0.0",
     "main": "main.js",
     "scripts": {
         "start": "electron .",
