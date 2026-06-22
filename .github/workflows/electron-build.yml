@@ -1,0 +1,49 @@
+name: Build Electron App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            script: build:linux
+          - os: macos-latest
+            script: build:darwin
+          - os: windows-latest
+            script: build:win32
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Build the web assets first
+      - run: npm ci
+      - run: npm run build:electron
+
+      # Install electron-app dependencies and build
+      - run: npm ci
+        working-directory: electron-app
+
+      - run: npm run ${{ matrix.script }}
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-${{ matrix.os }}
+          path: |
+            electron-app/dist/*.exe
+            electron-app/dist/*.zip
+            electron-app/dist/*.deb
+          if-no-files-found: ignore

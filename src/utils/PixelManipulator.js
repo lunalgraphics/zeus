@@ -1,3 +1,8 @@
+/**
+ * Fast pixel accessor for canvas image data.
+ * Reads pixel data once on construction and provides direct array access,
+ * avoiding repeated getImageData calls during rendering.
+ */
 class PixelManipulator {
     canvas;
     ctx;
@@ -34,3 +39,5 @@ class PixelManipulator {
         this.ctx.putImageData(this.imageData, 0, 0);
     }
 }
+
+export default PixelManipulator;
