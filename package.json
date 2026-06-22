@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:photopea": "cross-env VITE_BUILD_MODE=photopea vite build",
     "build:photoshop": "cross-env VITE_BUILD_MODE=photoshop vite build",
+    "build:electron": "cross-env VITE_BUILD_MODE=electron vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

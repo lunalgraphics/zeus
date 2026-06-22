@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
     else if (env.VITE_BUILD_MODE === 'photopea') {
         buildDir = 'photopea-plugin';
     }
+    else if (env.VITE_BUILD_MODE === 'electron') {
+        buildDir = 'electron-app/app';
+    }
 
     return {
         build: {

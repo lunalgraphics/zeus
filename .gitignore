@@ -25,3 +25,5 @@ dist-ssr
 
 photoshop-plugin/webview-contents
 photopea-plugin
+electron-app/app
+electron-app/node_modules
