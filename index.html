@@ -32,7 +32,7 @@
             <template x-for="[sectionName, fields] in Object.entries($store.lightning.sections)" :key="sectionName">
                 <div x-data="{ open: false }">
                     <b @click="open = !open" x-text="sectionName" :style="{ color: open ? 'deepskyblue' : '' }"></b>
-                    <div x-show="open" x-collapse>
+                    <div x-show="open">
                         <table style="width: 100%;">
                             <template x-for="field in fields" :key="field.key">
                                 <tr>
