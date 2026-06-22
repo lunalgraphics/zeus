@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 photoshop-plugin/webview-contents
+*.ccx
 photopea-plugin
 electron-app/app
 electron-app/node_modules
