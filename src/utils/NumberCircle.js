@@ -1,3 +1,9 @@
+/**
+ * Generates a circular binary matrix for use as a convolution kernel.
+ * Produces a (2*radius+1) × (2*radius+1) grid where cells inside the circle
+ * are 1, cells on the boundary are 0.5 (anti-aliased), and cells outside are 0.
+ * Used by ConvolveMatrixFilter to implement circular lens blur.
+ */
 class NumberCircle {
     radius = 5;
     matrix = [];

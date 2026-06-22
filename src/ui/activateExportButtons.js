@@ -1,3 +1,9 @@
+/**
+ * Platform-aware export button handler.
+ * Detects build mode (web, photopea, photoshop) and configures the export
+ * button to either download a PNG, insert into Photopea, or send raw RGBA
+ * pixel data to the Photoshop UXP host for layer creation.
+ */
 import Photopea from "photopea";
 import { getPreset } from "../data/presets.js";
 const { VITE_BUILD_MODE } = import.meta.env;

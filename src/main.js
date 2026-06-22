@@ -1,3 +1,8 @@
+/**
+ * Application entry point.
+ * Initializes the Alpine.js reactive store, loads the default preset,
+ * wires up the GUI sections to the renderer, and triggers the initial render.
+ */
 import Alpine from "alpinejs";
 
 import renderLightning from "./renderLightning.js";
